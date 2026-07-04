@@ -30,7 +30,7 @@
 <body>
 
 <div class="container">
-    <div class="page-title">TAX Payment Database (Sheet 2)</div>
+    <div class="page-title">TAX Payment Database (Data Name)</div>
     
     <div class="search-row">
         <label>Search Taxpayer *</label>
@@ -61,32 +61,36 @@
 <script>
     let matchedRows = [];
 
-    // স্ট্যান্ডার্ড CSV পার্সার
-    function parseCSVLine(text) {
-        let p = '', r = [];
-        let q = false;
+    function cleanCSVCells(text) {
+        let cells = [];
+        let current = '';
+        let inQuotes = false;
+        
         for (let i = 0; i < text.length; i++) {
-            let c = text[i];
-            if (c === '"') { q = !q; }
-            else if (c === ',' && !q) { r.push(p.trim()); p = ''; }
-            else { p += c; }
+            let char = text[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                cells.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
         }
-        r.push(p.trim());
-        return r.map(x => x.replace(/^"|"$/g, '').trim());
+        cells.push(current.trim());
+        return cells;
     }
 
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
-        const queryCleaned = queryRaw.replace(/[\s.]+/g, ''); 
-
-        const resultTable = document.getElementById("resultTable");
-        const loadingText = document.getElementById("loadingText");
-        const resultsList = document.getElementById("resultsList");
-
         if (!queryRaw) {
             alert("Please enter Name or TIN!");
             return;
         }
+
+        const resultTable = document.getElementById("resultTable");
+        const loadingText = document.getElementById("loadingText");
+        const resultsList = document.getElementById("resultsList");
 
         loadingText.style.display = "block";
         resultTable.style.display = "none";
@@ -96,13 +100,13 @@
 
         const cacheBuster = new Date().getTime();
         
-        // ২ নম্বর ট্যাবের জন্য gid=1156649733 ব্যবহার করা হয়েছে
-        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&gid=1156649733&t=${cacheBuster}`;
+        // এখানে সরাসরি 'sheet=Data Name' নির্দিষ্ট করে লিংকটি দেওয়া হয়েছে
+        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data%20Name&t=${cacheBuster}`;
 
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                alert("Error: গুগল শিট থেকে ডেটা রিড করা যাচ্ছে না!");
+                alert("Error: গুগল শিট থেকে ডেটা আনা যাচ্ছে না!");
                 return;
             }
 
@@ -113,19 +117,16 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                const row = parseCSVLine(line);
-                if (row.length < 2) continue;
+                const row = cleanCSVCells(line);
+                const fullLineText = row.join(' ').toLowerCase();
 
-                // কোনো কলাম হাইড নেই, তাই পুরো লাইনে ডেটা ম্যাচিং করার লজিক
-                let fullLineTextText = row.join(' ').toLowerCase().replace(/[\s.]+/g, '');
-
-                if (fullLineTextText.includes(queryCleaned)) {
+                if (fullLineText.includes(queryRaw)) {
                     matchedRows.push(row);
                 }
             }
 
             if (matchedRows.length === 0) {
-                alert("Sorry, no data found in Sheet 2!");
+                alert("Sorry, no data found in Data Name sheet!");
             } else if (matchedRows.length === 1) {
                 showTaxpayerDetails(0);
             } else {
@@ -133,21 +134,20 @@
                 resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) results found. Please choose one:</p>`;
                 
                 matchedRows.forEach((row, index) => {
-                    const sl = row[1] || 'N/A';
-                    const name = row[2] || 'N/A';
-                    const tin = row[3] || 'N/A';
+                    const sl = row[0] || 'N/A';
+                    const name = row[1] || 'N/A';
+                    const tin = row[2] || 'N/A';
                     
                     const item = document.createElement("div");
                     item.className = "result-item";
                     item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin}`;
-                    
                     item.onclick = function() { showTaxpayerDetails(index); };
                     resultsList.appendChild(item);
                 });
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to load database data!");
+            console.error("Error during search:", error);
+            alert("An error occurred. Please try again!");
         } finally {
             loadingText.style.display = "none";
         }
@@ -158,23 +158,24 @@
         const resultTable = document.getElementById("resultTable");
         const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
 
-        // কোনো কলাম হাইড না থাকায় সিরিয়াল অনুযায়ী নিখুঁত ম্যাপিং
-        document.getElementById("resSl").value = getVal(1);         
-        document.getElementById("resName").value = getVal(2);       
-        document.getElementById("resTin").value = getVal(3);        
-        document.getElementById("resMobile").value = getVal(4);     
-        document.getElementById("resPassword").value = getVal(5);   
-        document.getElementById("resZone").value = getVal(6);       
-        document.getElementById("resCircle").value = getVal(7);     
-        document.getElementById("resAddress").value = getVal(8);    
-        document.getElementById("resRef").value = getVal(9);        
-        document.getElementById("resLives").value = getVal(10);     
+        // 'Data Name' শিটের কলাম অনুযায়ী নিখুঁত ডিরেক্ট ম্যাপিং
+        document.getElementById("resSl").value = getVal(0);         
+        document.getElementById("resName").value = getVal(1);       
+        document.getElementById("resTin").value = getVal(2);        
+        document.getElementById("resMobile").value = getVal(3);     
+        document.getElementById("resPassword").value = getVal(4);   
+        document.getElementById("resZone").value = getVal(5);       
+        document.getElementById("resCircle").value = getVal(6);     
+        document.getElementById("resAddress").value = getVal(7);    
+        document.getElementById("resRef").value = getVal(8);        
+        document.getElementById("resLives").value = getVal(9);     
         
-        if (row[11] !== undefined && row[11] !== '') {
-            document.getElementById("resStatus").innerText = row[11].trim(); 
+        if (row[10] !== undefined && row[10] !== '') {
+            document.getElementById("resStatus").innerText = row[10].trim(); 
         } else {
             document.getElementById("resStatus").innerText = 'N/A';
         }
+        
         resultTable.style.display = "table";
     }
 </script>
