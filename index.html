@@ -3,20 +3,22 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; padding: 20px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        body { font-family: sans-serif; padding: 15px; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
         .btn { width: 100%; padding: 10px; color: white; border: none; cursor: pointer; margin-top: 10px; }
-        #addForm { display: none; padding: 15px; border: 1px solid #ccc; margin-top: 10px; }
+        #addForm { display: none; padding: 15px; border: 1px solid #007bff; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
     <h3>TAX Database</h3>
-    <input type="text" id="searchInput" placeholder="TIN দিয়ে সার্চ করুন...">
+    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
     <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
 
-    <div id="resultArea" style="margin-top:15px; border:1px solid #eee; padding:10px;"></div>
+    <div id="resultArea" style="margin-top:15px;"></div>
 
-    <button class="btn" style="background:#28a745;" onclick="document.getElementById('addForm').style.display='block'">➕ নতুন ডাটা যোগ করুন</button>
+    <button class="btn" style="background:#28a745;" onclick="toggleForm()">➕ Add New Data</button>
 
     <div id="addForm">
         <input type="text" id="name" placeholder="Name">
@@ -28,18 +30,22 @@
         <input type="text" id="status" placeholder="Status">
         <input type="text" id="reference" placeholder="Reference">
         <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
-        <button class="btn" style="background:#666;" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
     </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
+    function toggleForm() {
+        let f = document.getElementById("addForm");
+        f.style.display = (f.style.display === "block") ? "none" : "block";
+    }
+
     function searchData() {
-        var query = document.getElementById("searchInput").value;
-        fetch(SCRIPT_URL + "?q=" + query).then(res => res.json()).then(data => {
-            let html = "<table border='1' width='100%'>";
-            data.forEach(row => {
-                html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
+        let q = document.getElementById("searchInput").value.toLowerCase();
+        fetch(SCRIPT_URL + "?q=" + q).then(res => res.json()).then(data => {
+            let html = "<table><tr><th>Serial</th><th>Name</th><th>TIN</th><th>Mobile</th><th>Zone</th><th>Circle</th><th>Address</th><th>Status</th><th>Reference</th></tr>";
+            data.filter(row => row.some(c => String(c).toLowerCase().includes(q))).forEach(row => {
+                html += "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>";
             });
             document.getElementById("resultArea").innerHTML = html + "</table>";
         });
@@ -57,7 +63,7 @@
             reference: document.getElementById("reference").value
         };
         fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(payload)})
-            .then(() => alert("ডাটা সেভ হয়েছে!"));
+            .then(() => { alert("Saved!"); location.reload(); });
     }
 </script>
 </body>
