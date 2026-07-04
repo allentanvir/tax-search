@@ -62,9 +62,8 @@
     let matchedRows = [];
 
     async function searchFromSheet() {
-        // সার্চ কোয়েরি থেকে অতিরিক্ত স্পেস এবং ডট দূর করার ক্লিনিং লজিক
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
-        const queryCleaned = queryRaw.replace(/[\s.]+/g, ''); // স্পেস ও ডট সব মুছে ক্লিন করা
+        const queryCleaned = queryRaw.replace(/[\s.]+/g, ''); 
 
         const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
@@ -101,13 +100,11 @@
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
                 if (row.length < 4) continue;
 
-                // শিটের ভেতরের নাম ও টিন ক্লিন করা (স্পেস ও ডট মুক্ত করা)
                 const nameInSheetRaw = row[2] ? row[2].toLowerCase().trim() : ''; 
                 const nameInSheetCleaned = nameInSheetRaw.replace(/[\s.]+/g, ''); 
                 
                 const tinInSheet = row[3] ? row[3].toLowerCase().trim() : '';   
 
-                // স্মার্ট ম্যাচিং লজিক
                 if (nameInSheetCleaned.includes(queryCleaned) || tinInSheet.includes(queryRaw)) {
                     matchedRows.push(row);
                 }
