@@ -61,6 +61,20 @@
 <script>
     let matchedRows = [];
 
+    // কোটেশনের ভেতরের কমা হ্যান্ডেল করার জন্য স্ট্যান্ডার্ড সিএসভি পার্সার
+    function parseCSVLine(text) {
+        let p = '', r = [];
+        let q = false;
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i];
+            if (c === '"') { q = !q; }
+            else if (c === ',' && !q) { r.push(p.trim()); p = ''; }
+            else { p += c; }
+        }
+        r.push(p.trim());
+        return r.map(x => x.replace(/^"|"$/g, '').trim());
+    }
+
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
         const queryCleaned = queryRaw.replace(/[\s.]+/g, ''); 
@@ -97,11 +111,10 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কমা দিয়ে সাধারণ স্প্লিট লজিক (সবচেয়ে সেফ এবং লাইটওয়েট)
-                const row = line.split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
+                const row = parseCSVLine(line);
                 if (row.length < 3) continue;
 
-                // গ্লোবাল ম্যাচিং: পুরো লাইনের যেকোনো জায়গায় লেখাটি মিললেই সিলেক্ট হবে
+                // পুরো লাইনের সব লেখা একসাথে ক্লিন করে সার্চ করা হবে যেন ভুল না হয়
                 let lineTextCleaned = row.join(' ').toLowerCase().replace(/[\s.]+/g, '');
 
                 if (lineTextCleaned.includes(queryCleaned)) {
