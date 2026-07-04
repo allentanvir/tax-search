@@ -30,7 +30,7 @@
 <body>
 
 <div class="container">
-    <div class="page-title">TAX Payment Database</div>
+    <div class="page-title">TAX Payment Database (Sheet 2)</div>
     
     <div class="search-row">
         <label>Search Taxpayer *</label>
@@ -61,7 +61,7 @@
 <script>
     let matchedRows = [];
 
-    // কোটেশনের ভেতরের কমা হ্যান্ডেল করার জন্য স্ট্যান্ডার্ড সিএসভি পার্সার
+    // স্ট্যান্ডার্ড CSV পার্সার
     function parseCSVLine(text) {
         let p = '', r = [];
         let q = false;
@@ -95,12 +95,14 @@
         matchedRows = [];
 
         const cacheBuster = new Date().getTime();
-        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&t=${cacheBuster}`;
+        
+        // ২ নম্বর ট্যাবের জন্য gid=1156649733 ব্যবহার করা হয়েছে
+        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&gid=1156649733&t=${cacheBuster}`;
 
         try {
             const response = await fetch(url);
             if (!response.ok) {
-                alert("Error: গুগল শিট থেকে ডেটা আনা যাচ্ছে না! Share সেটিংস চেক করুন।");
+                alert("Error: গুগল শিট থেকে ডেটা রিড করা যাচ্ছে না!");
                 return;
             }
 
@@ -112,34 +114,32 @@
                 if (!line) continue;
 
                 const row = parseCSVLine(line);
-                if (row.length < 3) continue;
+                if (row.length < 2) continue;
 
-                // পুরো লাইনের সব লেখা একসাথে ক্লিন করে সার্চ করা হবে যেন ভুল না হয়
-                let lineTextCleaned = row.join(' ').toLowerCase().replace(/[\s.]+/g, '');
+                // কোনো কলাম হাইড নেই, তাই পুরো লাইনে ডেটা ম্যাচিং করার লজিক
+                let fullLineTextText = row.join(' ').toLowerCase().replace(/[\s.]+/g, '');
 
-                if (lineTextCleaned.includes(queryCleaned)) {
+                if (fullLineTextText.includes(queryCleaned)) {
                     matchedRows.push(row);
                 }
             }
 
             if (matchedRows.length === 0) {
-                alert("Sorry, no data found for this Name or TIN!");
+                alert("Sorry, no data found in Sheet 2!");
             } else if (matchedRows.length === 1) {
                 showTaxpayerDetails(0);
             } else {
                 resultsList.style.display = "block";
-                resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
+                resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) results found. Please choose one:</p>`;
                 
                 matchedRows.forEach((row, index) => {
                     const sl = row[1] || 'N/A';
                     const name = row[2] || 'N/A';
                     const tin = row[3] || 'N/A';
-                    const mobile = row[4] || 'N/A';
-                    const ref = row[9] || 'N/A';
                     
                     const item = document.createElement("div");
                     item.className = "result-item";
-                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin} | <strong>Mobile:</strong> ${mobile} | <strong>Ref:</strong> ${ref}`;
+                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin}`;
                     
                     item.onclick = function() { showTaxpayerDetails(index); };
                     resultsList.appendChild(item);
@@ -158,6 +158,7 @@
         const resultTable = document.getElementById("resultTable");
         const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
 
+        // কোনো কলাম হাইড না থাকায় সিরিয়াল অনুযায়ী নিখুঁত ম্যাপিং
         document.getElementById("resSl").value = getVal(1);         
         document.getElementById("resName").value = getVal(2);       
         document.getElementById("resTin").value = getVal(3);        
@@ -169,7 +170,7 @@
         document.getElementById("resRef").value = getVal(9);        
         document.getElementById("resLives").value = getVal(10);     
         
-        if (row[11] !== undefined) {
+        if (row[11] !== undefined && row[11] !== '') {
             document.getElementById("resStatus").innerText = row[11].trim(); 
         } else {
             document.getElementById("resStatus").innerText = 'N/A';
