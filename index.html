@@ -3,23 +3,24 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
-        .search-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 25px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
-        .result-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 8px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .row { display: flex; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
-        .label { font-weight: bold; color: #555; width: 40%; }
-        .value { color: #000; width: 60%; }
+        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .res-card { background: white; padding: 15px; border-left: 6px solid #27ae60; margin-bottom: 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .row { display: flex; padding: 4px 0; border-bottom: 1px solid #f9f9f9; }
+        .lbl { font-weight: bold; width: 40%; color: #555; }
+        .val { width: 60%; color: #000; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="search-box">
-        <h3 style="margin-top:0;">TAX Information Search</h3>
-        <input type="text" id="s" placeholder="Enter Name or TIN...">
+    <div class="box">
+        <h3>TAX Search</h3>
+        <input type="text" id="sName" placeholder="Search by Assessee Name...">
+        <input type="text" id="sTin" placeholder="Search by TIN Number...">
         <button class="btn" onclick="search()">Search Now</button>
     </div>
     <div id="res"></div>
@@ -29,28 +30,39 @@
     const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
     
     function search() {
-        let q = document.getElementById("s").value.toLowerCase();
+        let n = document.getElementById("sName").value.trim().toLowerCase();
+        let t = document.getElementById("sTin").value.trim().toLowerCase();
+        
         document.getElementById("res").innerHTML = "Searching...";
-        fetch(URL + "?q=" + q).then(res => res.json()).then(data => {
-            let html = "";
-            let filtered = data.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
+        
+        fetch(URL + "?q=" + encodeURIComponent(n || t)).then(res => res.json()).then(data => {
+            let filtered = data.filter(r => {
+                let nameMatch = n && String(r[1]).toLowerCase().includes(n);
+                let tinMatch = t && String(r[2]).toLowerCase().includes(t);
+                return nameMatch || tinMatch;
+            });
             
+            if(filtered.length === 0) {
+                document.getElementById("res").innerHTML = "No record found.";
+                return;
+            }
+
+            let html = "";
             filtered.forEach(r => {
-                html += `<div class='result-card'>
-                    <div class='row'><span class='label'>Serial:</span><span class='value'>${r[0]}</span></div>
-                    <div class='row'><span class='label'>Name:</span><span class='value'>${r[1]}</span></div>
-                    <div class='row'><span class='label'>TIN:</span><span class='value'>${r[2]}</span></div>
-                    <div class='row'><span class='label'>Mobile:</span><span class='value'>${r[3]}</span></div>
-                    <div class='row'><span class='label'>Password:</span><span class='value'>${r[4]}</span></div>
-                    <div class='row'><span class='label'>Zone:</span><span class='value'>${r[5]}</span></div>
-                    <div class='row'><span class='label'>Circle:</span><span class='value'>${r[6]}</span></div>
-                    <div class='row'><span class='label'>Address:</span><span class='value'>${r[7]}</span></div>
-                    <div class='row'><span class='label'>Ref:</span><span class='value'>${r[8]}</span></div>
-                    <div class='row'><span class='label'>Lives:</span><span class='value'>${r[9]}</span></div>
-                    <div class='row'><span class='label'>Status:</span><span class='value'>${r[10]}</span></div>
+                html += `<div class='res-card'>
+                    <div class='row'><span class='lbl'>Name:</span><span class='val'>${r[1]}</span></div>
+                    <div class='row'><span class='lbl'>TIN:</span><span class='val'>${r[2]}</span></div>
+                    <div class='row'><span class='lbl'>Mobile:</span><span class='val'>${r[3]}</span></div>
+                    <div class='row'><span class='lbl'>Password:</span><span class='val'>${r[4]}</span></div>
+                    <div class='row'><span class='lbl'>Zone:</span><span class='val'>${r[5]}</span></div>
+                    <div class='row'><span class='lbl'>Circle:</span><span class='val'>${r[6]}</span></div>
+                    <div class='row'><span class='lbl'>Address:</span><span class='val'>${r[7]}</span></div>
+                    <div class='row'><span class='lbl'>Ref:</span><span class='val'>${r[8]}</span></div>
+                    <div class='row'><span class='lbl'>Lives:</span><span class='val'>${r[9]}</span></div>
+                    <div class='row'><span class='lbl'>Status:</span><span class='val'>${r[10]}</span></div>
                 </div>`;
             });
-            document.getElementById("res").innerHTML = html || "No record found.";
+            document.getElementById("res").innerHTML = html;
         });
     }
 </script>
