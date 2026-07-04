@@ -1,20 +1,23 @@
-function searchData() {
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+
+    function searchData() {
         var res = document.getElementById("resultArea");
         res.innerHTML = "Searching...";
         var query = document.getElementById("searchInput").value;
         
-        fetch(SCRIPT_URL + "?q=" + query)
+        fetch(SCRIPT_URL + "?q=" + encodeURIComponent(query))
             .then(res => res.json())
             .then(data => {
                 if(data.length === 0) {
                     res.innerHTML = "No results found.";
                 } else {
-                    // ডাটা সুন্দর করে টেবিল আকারে সাজানোর কোড
+                    // সুন্দর টেবিল তৈরির কোড
                     let html = "<div style='overflow-x:auto;'><table border='1' style='width:100%; border-collapse:collapse; font-size:12px;'>";
                     data.forEach(row => {
                         html += "<tr>";
                         row.forEach(cell => {
-                            html += "<td style='padding:5px;'>" + (cell || "") + "</td>";
+                            html += "<td style='padding:5px; border:1px solid #ccc;'>" + (cell || "") + "</td>";
                         });
                         html += "</tr>";
                     });
@@ -22,5 +25,11 @@ function searchData() {
                     res.innerHTML = html;
                 }
             })
-            .catch(() => res.innerHTML = "Error! Check URL.");
+            .catch(err => {
+                console.error(err);
+                res.innerHTML = "Error! Please try again.";
+            });
     }
+
+    // saveData ফাংশনটি এখানে থাকবে...
+</script>
