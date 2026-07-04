@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tax Assessee Database Search</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .search-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 480px;
+        }
+        h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 20px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover { background-color: #219653; }
+        .loading { display: none; color: #7f8c8d; text-align: center; margin-top: 10px; font-style: italic; }
+        
+        /* রেজাল্ট বক্স ডিজাইন */
+        .result-box {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            display: none;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .info-row strong { color: #34495e; }
+        .info-row span { color: #2c3e50; font-weight: 500; text-align: right; }
+        .status-badge {
+            background-color: #2980b9;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="search-container">
+    <h2>📋 করদাতা তথ্য অনুসন্ধান</h2>
+    <input type="text" id="searchInput" placeholder="নাম অথবা TIN নম্বর লিখুন...">
+    <button onclick="searchFromSheet()">Search</button>
+    <div id="loadingText" class="loading">গুগল শিট থেকে তথ্য খোঁজা হচ্ছে...</div>
+
+    <!-- রেজাল্ট দেখানোর বক্স -->
+    <div class="result-box" id="resultBox">
+        <div class="info-row"><strong>SL:</strong> <span id="resSl"></span></div>
+        <div class="info-row"><strong>Assessee Name:</strong> <span id="resName"></span></div>
+        <div class="info-row"><strong>TIN:</strong> <span id="resTin"></span></div>
+        <div class="info-row"><strong>Mobile No:</strong> <span id="resMobile"></span></div>
+        <div class="info-row"><strong>Password:</strong> <span id="resPassword"></span></div>
+        <div class="info-row"><strong>Zone:</strong> <span id="resZone"></span></div>
+        <div class="info-row"><strong>Circle:</strong> <span id="resCircle"></span></div>
+        <div class="info-row"><strong>Address:</strong> <span id="resAddress"></span></div>
+        <div class="info-row"><strong>Ref:</strong> <span id="resRef"></span></div>
+        <div class="info-row"><strong>Lives:</strong> <span id="resLives"></span></div>
+        <div class="info-row"><strong>Work:</strong> <span id="resWork"></span></div>
+        <div class="info-row"><strong>Status:</strong> <span id="resStatus" class="status-badge"></span></div>
+    </div>
+</div>
+
+<script>
+    // আপনার দেওয়া গুগল শিট আইডি
+    const sheetId = '14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU';
+    const sheetName = 'Sheet1'; // আপনার শিটের নিচের ট্যাবের নাম যদি আলাদা হয়, তবে 'Sheet1' এর জায়গায় সেটি লিখবেন
+    
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+
+    async function searchFromSheet() {
+        const query = document.getElementById("searchInput").value.toLowerCase().trim();
+        const resultBox = document.getElementById("resultBox");
+        const loadingText = document.getElementById("loadingText");
+
+        if (!query) {
+            alert("অনুগ্রহ করে নাম অথবা TIN নম্বর লিখুন!");
+            return;
+        }
+
+        loadingText.style.display = "block";
+        resultBox.style.display = "none";
+
+        try {
+            const response = await fetch(url);
+            const text = await response.text();
+            
+            // গুগলের সিকিউরিটি টেক্সট বাদ দিয়ে JSON অবজেক্ট তৈরি
+            const jsonData = JSON.parse(text.substring(47, text.length - 2));
+            const rows = jsonData.table.rows;
+
+            let dataFound = false;
+
+            for (let row of rows) {
+                // কলাম B তে নাম এবং কলাম C তে TIN আছে ধরে চেক করা হচ্ছে
+                const nameInSheet = row.c[1] ? row.c[1].v.toString().toLowerCase() : '';
+                const tinInSheet = row.c[2] ? row.c[2].v.toString().toLowerCase() : '';
+
+                // নাম অথবা টিন নম্বরের সাথে ম্যাচ করলে ডাটা শো করবে
+                if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
+                    
+                    // ভ্যালু অ্যাসাইন করার ফাংশন (ডাটা খালি থাকলে 'N/A' দেখাবে)
+                    const getVal = (index) => (row.c[index] && row.c[index].v !== null) ? row.c[index].v : 'N/A';
+
+                    document.getElementById("resSl").innerText = getVal(0);
+                    document.getElementById("resName").innerText = getVal(1);
+                    document.getElementById("resTin").innerText = getVal(2);
+                    document.getElementById("resMobile").innerText = getVal(3);
+                    document.getElementById("resPassword").innerText = getVal(4);
+                    document.getElementById("resZone").innerText = getVal(5);
+                    document.getElementById("resCircle").innerText = getVal(6);
+                    document.getElementById("resAddress").innerText = getVal(7);
+                    document.getElementById("resRef").innerText = getVal(8);
+                    document.getElementById("resLives").innerText = getVal(9);
+                    document.getElementById("resWork").innerText = getVal(10);
+                    document.getElementById("resStatus").innerText = getVal(11);
+
+                    resultBox.style.display = "block";
+                    dataFound = true;
+                    break; 
+                }
+            }
+
+            if (!dataFound) {
+                alert("দুঃখিত, এই নাম বা TIN নম্বরের কোনো তথ্য পাওয়া যায়নি!");
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            alert("ডাটা লোড করতে সমস্যা হয়েছে! নিশ্চিত করুন যে আপনার গুগল শিটটি 'Anyone with the link' করা আছে।");
+        } finally {
+            loadingText.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
