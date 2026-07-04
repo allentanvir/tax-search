@@ -73,12 +73,14 @@
 <body>
 
 <div class="search-container">
-    <h2>📋 করদাতা তথ্য অনুসন্ধান</h2>
+    <h2>📋 করदाता তথ্য অনুসন্ধান</h2>
     <input type="text" id="searchInput" placeholder="নাম অথবা TIN নম্বর লিখুন...">
     <button onclick="searchFromSheet()">Search</button>
     <div id="loadingText" class="loading">গুগল শিট থেকে তথ্য খোঁজা হচ্ছে...</div>
 
+    <!-- রেজাল্ট দেখানোর বক্স -->
     <div class="result-box" id="resultBox">
+        <div class="info-row"><strong>Serial no:</strong> <span id="resSl"></span></div>
         <div class="info-row"><strong>Assessee Name:</strong> <span id="resName"></span></div>
         <div class="info-row"><strong>TIN:</strong> <span id="resTin"></span></div>
         <div class="info-row"><strong>Mobile No:</strong> <span id="resMobile"></span></div>
@@ -88,13 +90,11 @@
         <div class="info-row"><strong>Address:</strong> <span id="resAddress"></span></div>
         <div class="info-row"><strong>Ref:</strong> <span id="resRef"></span></div>
         <div class="info-row"><strong>Lives:</strong> <span id="resLives"></span></div>
-        <div class="info-row"><strong>Work:</strong> <span id="resWork"></span></div>
-        <div class="info-row"><strong>Status:</strong> <span id="resStatus" class="status-badge"></span></div>
+        <div class="info-row"><strong>Work Status:</strong> <span id="resStatus" class="status-badge"></span></div>
     </div>
 </div>
 
 <script>
-    // সরাসরি গুগল শিট এক্সপোর্ট ইউআরএল
     const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv`;
 
     async function searchFromSheet() {
@@ -114,7 +114,6 @@
             const response = await fetch(url);
             const csvText = await response.text();
             
-            // নিখুঁতভাবে CSV ডাটা পার্স করার লজিক
             const lines = csvText.split("\n");
             let dataFound = false;
 
@@ -122,31 +121,32 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কোটেশন মার্কসহ কমা আলাদা করার উন্নত নিয়ম
+                // কমা দিয়ে আলাদা করার সাথে কোটেশন হ্যান্ডেল করার লজিক
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
-                if (row.length < 2) continue;
+                if (row.length < 3) continue;
 
-                // কলাম ইনডেক্স নির্ধারণ
-                const nameInSheet = row[0] ? row[0].toLowerCase().trim() : ''; 
-                const tinInSheet = row[1] ? row[1].toLowerCase().trim() : '';   
+                // আপনার দেওয়া নতুন সিরিয়াল অনুযায়ী কলাম ম্যাপিং:
+                // index 0 = Serial no, index 1 = Assessee Name, index 2 = Tin
+                const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
+                const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
-                // 'includes' ব্যবহার করা হয়েছে যাতে আংশিক নাম লিখলেও খুঁজে পায়
+                // নাম অথবা TIN নম্বরের অংশবিশেষ মিললেই ডাটা দেখাবে
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    document.getElementById("resName").innerText = getVal(0);
-                    document.getElementById("resTin").innerText = getVal(1);
-                    document.getElementById("resMobile").innerText = getVal(2);
-                    document.getElementById("resPassword").innerText = getVal(3);
-                    document.getElementById("resZone").innerText = getVal(4);
-                    document.getElementById("resCircle").innerText = getVal(5);
-                    document.getElementById("resAddress").innerText = getVal(6);
-                    document.getElementById("resRef").innerText = getVal(7);
-                    document.getElementById("resLives").innerText = getVal(8);
-                    document.getElementById("resWork").innerText = getVal(9);
-                    document.getElementById("resStatus").innerText = getVal(10);
+                    document.getElementById("resSl").innerText = getVal(0);
+                    document.getElementById("resName").innerText = getVal(1);
+                    document.getElementById("resTin").innerText = getVal(2);
+                    document.getElementById("resMobile").innerText = getVal(3);
+                    document.getElementById("resPassword").innerText = getVal(4);
+                    document.getElementById("resZone").innerText = getVal(5);
+                    document.getElementById("resCircle").innerText = getVal(6);
+                    document.getElementById("resAddress").innerText = getVal(7);
+                    document.getElementById("resRef").innerText = getVal(8);
+                    document.getElementById("resLives").innerText = getVal(9);
+                    document.getElementById("resStatus").innerText = getVal(10); // Work Status
 
                     resultBox.style.display = "block";
                     dataFound = true;
@@ -160,7 +160,7 @@
 
         } catch (error) {
             console.error("Error:", error);
-            alert("ডাটা লোড করতে সমস্যা হয়েছে! ইন্টারনেট কানেকশন বা শিটের শেয়ারিং সেটিং চেক করুন।");
+            alert("ডাটা লোড করতে সমস্যা হয়েছে!");
         } finally {
             loadingText.style.display = "none";
         }
