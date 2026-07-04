@@ -3,24 +3,29 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 15px; }
-        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn { width: 100%; padding: 10px; color: white; border: none; cursor: pointer; margin-top: 10px; }
-        #addForm { display: none; padding: 15px; border: 1px solid #007bff; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ccc; padding: 5px; font-size: 12px; }
+        body { font-family: Arial; padding: 20px; background-color: #f4f4f4; }
+        .box { background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        h3 { color: #333; }
     </style>
 </head>
 <body>
-    <h3>TAX Database</h3>
-    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
-    <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
 
-    <div id="resultArea" style="margin-top:15px;"></div>
+    <div class="box">
+        <h3>TAX Database Search</h3>
+        <input type="text" id="searchInput" placeholder="Search by TIN or Name...">
+        <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
+    </div>
 
-    <button class="btn" style="background:#28a745;" onclick="toggleForm()">➕ Add New Data</button>
+    <div id="resultArea"></div>
 
-    <div id="addForm">
+    <div class="box">
+        <button class="btn" style="background:#28a745;" onclick="document.getElementById('addForm').style.display='block'">+ Add New Data</button>
+    </div>
+
+    <div id="addForm" class="box" style="display:none;">
+        <h4>Add New Information</h4>
         <input type="text" id="name" placeholder="Name">
         <input type="text" id="tin" placeholder="TIN">
         <input type="text" id="mobile" placeholder="Mobile">
@@ -35,19 +40,15 @@
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
-    function toggleForm() {
-        let f = document.getElementById("addForm");
-        f.style.display = (f.style.display === "block") ? "none" : "block";
-    }
-
     function searchData() {
         let q = document.getElementById("searchInput").value.toLowerCase();
         fetch(SCRIPT_URL + "?q=" + q).then(res => res.json()).then(data => {
-            let html = "<table><tr><th>Serial</th><th>Name</th><th>TIN</th><th>Mobile</th><th>Zone</th><th>Circle</th><th>Address</th><th>Status</th><th>Reference</th></tr>";
-            data.filter(row => row.some(c => String(c).toLowerCase().includes(q))).forEach(row => {
-                html += "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>";
+            let res = data.filter(row => row.some(c => String(c).toLowerCase().includes(q)));
+            let html = "<div class='box'><strong>Results:</strong><br>";
+            res.forEach(row => {
+                html += `<p><b>Name:</b> ${row[1]}<br><b>TIN:</b> ${row[2]}<br><b>Mobile:</b> ${row[3]}<br><b>Address:</b> ${row[6]}</p><hr>`;
             });
-            document.getElementById("resultArea").innerHTML = html + "</table>";
+            document.getElementById("resultArea").innerHTML = html + "</div>";
         });
     }
 
@@ -63,7 +64,7 @@
             reference: document.getElementById("reference").value
         };
         fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(payload)})
-            .then(() => { alert("Saved!"); location.reload(); });
+            .then(() => { alert("Saved Successfully!"); location.reload(); });
     }
 </script>
 </body>
