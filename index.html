@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAX Payment Database Search</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -202,7 +201,6 @@
         loadingText.style.display = "block";
         resultTable.style.display = "none";
 
-        // পুরোনো মেমোরি জ্যাম দূর করতে টাইমস্ট্যাম্প ব্যবহার
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&t=${cacheBuster}`;
 
@@ -210,17 +208,20 @@
             const response = await fetch(url);
             const csvText = await response.text();
             
-            // PapaParse লাইব্রেরি দিয়ে কমার ভেতরের অ্যাড্রেসকে সুরক্ষিত রেখে ডাটা পার্স করা
-            const parsedData = Papa.parse(csvText, { skipEmptyLines: true }).data;
+            // লাইনগুলোকে ভাগ করা
+            const lines = csvText.split(/\r?\n/);
             let dataFound = false;
 
-            // প্রথম লাইন (হেডার) বাদে লুপ চালানো
-            for (let i = 1; i < parsedData.length; i++) {
-                const row = parsedData[i];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // অ্যাড্রেসের ভেতরের কমাকে সুরক্ষিত রেখে কলাম আলাদা করার রেগুলার এক্সপ্রেশন
+                const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
                 if (row.length < 3) continue;
 
-                // কলাম বিন্যাস ফিক্সিং
+                // আপনার পাঠানো লিংক ও শিটের ১:১ কলাম বিন্যাস ফিক্স
                 const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
                 const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
@@ -228,7 +229,6 @@
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    // সঠিক বক্সে সঠিক মান বসানো হলো
                     document.getElementById("resSl").value = getVal(0);         
                     document.getElementById("resName").value = getVal(1);       
                     document.getElementById("resTin").value = getVal(2);        
