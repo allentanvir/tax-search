@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 15px; }
+        body { font-family: sans-serif; padding: 20px; }
         .container { max-width: 500px; margin: auto; }
         input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; border-radius: 4px; margin-top: 10px; }
@@ -15,7 +15,7 @@
     <h3>TAX Database</h3>
     <input type="text" id="searchInput" placeholder="Search Name or TIN...">
     <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
-    <div id="resultArea" style="margin-top:10px;"></div>
+    <div id="resultArea" style="margin-top:15px; background:#f9f9f9; padding:10px;"></div>
 
     <button class="btn" style="background:#0056b3;" onclick="document.getElementById('inputForm').style.display='block'">+ Add New Data</button>
 
@@ -36,9 +36,18 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
     function searchData() {
+        var res = document.getElementById("resultArea");
+        res.innerHTML = "Searching...";
         fetch(SCRIPT_URL + "?q=" + document.getElementById("searchInput").value)
             .then(res => res.json())
-            .then(data => document.getElementById("resultArea").innerText = JSON.stringify(data));
+            .then(data => {
+                if(data.length > 0) {
+                    res.innerHTML = "Found: " + JSON.stringify(data);
+                } else {
+                    res.innerHTML = "No results found.";
+                }
+            })
+            .catch(() => res.innerHTML = "Error! Check URL.");
     }
 
     function saveData() {
