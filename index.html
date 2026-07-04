@@ -3,95 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tax Assessee Database Search</title>
+    <title>TAX Payment Database Search</title>
     <style>
+        /* আপনার দেওয়া image_76a909.png এর ফন্ট এবং কালার স্কিম অনুযায়ী স্টাইল */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #ffffff;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .search-container {
-            background: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 480px;
+            color: #555555;
         }
-        h2 { margin-top: 0; color: #2c3e50; text-align: center; margin-bottom: 20px; }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .page-title {
+            font-size: 20px;
+            color: #5c768d;
+            font-weight: normal;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+            margin-bottom: 25px;
+        }
+        .search-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .search-row label {
+            width: 140px;
+            font-size: 14px;
+            color: #333333;
+        }
+        .search-row label span {
+            color: red;
+        }
+        .input-group {
+            display: flex;
+            flex: 1;
+            gap: 10px;
+        }
         input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 16px;
-            box-sizing: border-box;
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            color: #333;
         }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #27ae60;
+        input[type="text"]:focus {
+            border-color: #3b82f6;
+        }
+        .btn-search {
+            background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 6px;
+            padding: 6px 15px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        button:hover { background-color: #219653; }
-        .loading { display: none; color: #7f8c8d; text-align: center; margin-top: 10px; font-style: italic; }
-        
-        .result-box {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #ecf0f1;
+        .btn-search:hover {
+            background-color: #0069d9;
+        }
+        .loading {
+            display: none;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        /* তথ্য দেখানোর টেবিল স্টাইল */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
             display: none;
         }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
+        .result-table td {
             padding: 8px 0;
-            border-bottom: 1px solid #f8f9fa;
+            vertical-align: top;
+            font-size: 14px;
         }
-        .info-row strong { color: #34495e; }
-        .info-row span { color: #2c3e50; font-weight: 500; text-align: right; }
+        .result-table td.label-cell {
+            width: 140px;
+            color: #333333;
+        }
+        .result-table td.value-cell {
+            padding-left: 10px;
+        }
+        .result-table input, .result-table textarea {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            background-color: #f0f0f0; /* সরকারি সাইটের মতো লকড ইনপুট কালার */
+            color: #333333;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+            resize: none;
+        }
         .status-badge {
-            background-color: #2980b9;
+            display: inline-block;
+            background-color: #28a745;
             color: white;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
             font-size: 13px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-<div class="search-container">
-    <h2>📋 করदाता তথ্য অনুসন্ধান</h2>
-    <input type="text" id="searchInput" placeholder="নাম অথবা TIN নম্বর লিখুন...">
-    <button onclick="searchFromSheet()">Search</button>
-    <div id="loadingText" class="loading">গুগল শিট থেকে তথ্য খোঁজা হচ্ছে...</div>
-
-    <!-- রেজাল্ট দেখানোর বক্স -->
-    <div class="result-box" id="resultBox">
-        <div class="info-row"><strong>Serial no:</strong> <span id="resSl"></span></div>
-        <div class="info-row"><strong>Assessee Name:</strong> <span id="resName"></span></div>
-        <div class="info-row"><strong>TIN:</strong> <span id="resTin"></span></div>
-        <div class="info-row"><strong>Mobile No:</strong> <span id="resMobile"></span></div>
-        <div class="info-row"><strong>Password:</strong> <span id="resPassword"></span></div>
-        <div class="info-row"><strong>Zone:</strong> <span id="resZone"></span></div>
-        <div class="info-row"><strong>Circle:</strong> <span id="resCircle"></span></div>
-        <div class="info-row"><strong>Address:</strong> <span id="resAddress"></span></div>
-        <div class="info-row"><strong>Ref:</strong> <span id="resRef"></span></div>
-        <div class="info-row"><strong>Lives:</strong> <span id="resLives"></span></div>
-        <div class="info-row"><strong>Work Status:</strong> <span id="resStatus" class="status-badge"></span></div>
+<div class="container">
+    <div class="page-title">TAX Payment Database</div>
+    
+    <div class="search-row">
+        <label>Search Taxpayer <span>*</span></label>
+        <div class="input-group">
+            <input type="text" id="searchInput" placeholder="Enter Name or TIN...">
+            <button class="btn-search" onclick="searchFromSheet()">
+                <!-- সার্চ লেন্স আইকন -->
+                <svg width="16" height="16" fill="white" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+            </button>
+        </div>
     </div>
+
+    <div id="loadingText" class="loading">Searching database...</div>
+
+    <!-- সরকারি ফরমের মতো রেজাল্ট টেবিল -->
+    <table class="result-table" id="resultTable">
+        <tr>
+            <td class="label-cell">Serial No</td>
+            <td class="value-cell"><input type="text" id="resSl" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Assessee Name</td>
+            <td class="value-cell"><input type="text" id="resName" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">TIN</td>
+            <td class="value-cell"><input type="text" id="resTin" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Mobile No</td>
+            <td class="value-cell"><input type="text" id="resMobile" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Password</td>
+            <td class="value-cell"><input type="text" id="resPassword" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Taxes Zone</td>
+            <td class="value-cell"><input type="text" id="resZone" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Taxes Circle</td>
+            <td class="value-cell"><input type="text" id="resCircle" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Address</td>
+            <td class="value-cell"><textarea id="resAddress" rows="3" readonly></textarea></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Ref</td>
+            <td class="value-cell"><input type="text" id="resRef" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Lives</td>
+            <td class="value-cell"><input type="text" id="resLives" readonly></td>
+        </tr>
+        <tr>
+            <td class="label-cell">Work Status</td>
+            <td class="value-cell"><span id="resStatus" class="status-badge"></span></td>
+        </tr>
+    </table>
 </div>
 
 <script>
@@ -99,21 +193,20 @@
 
     async function searchFromSheet() {
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
-        const resultBox = document.getElementById("resultBox");
+        const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
 
         if (!query) {
-            alert("অনুগ্রহ করে নাম অথবা TIN নম্বর লিখুন!");
+            alert("Please enter Name or TIN!");
             return;
         }
 
         loadingText.style.display = "block";
-        resultBox.style.display = "none";
+        resultTable.style.style.display = "none";
 
         try {
             const response = await fetch(url);
             const csvText = await response.text();
-            
             const lines = csvText.split("\n");
             let dataFound = false;
 
@@ -121,46 +214,40 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কমা দিয়ে আলাদা করার সাথে কোটেশন হ্যান্ডেল করার লজিক
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-
                 if (row.length < 3) continue;
 
-                // আপনার দেওয়া নতুন সিরিয়াল অনুযায়ী কলাম ম্যাপিং:
-                // index 0 = Serial no, index 1 = Assessee Name, index 2 = Tin
                 const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
                 const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
-                // নাম অথবা TIN নম্বরের অংশবিশেষ মিললেই ডাটা দেখাবে
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
-                    
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    document.getElementById("resSl").innerText = getVal(0);
-                    document.getElementById("resName").innerText = getVal(1);
-                    document.getElementById("resTin").innerText = getVal(2);
-                    document.getElementById("resMobile").innerText = getVal(3);
-                    document.getElementById("resPassword").innerText = getVal(4);
-                    document.getElementById("resZone").innerText = getVal(5);
-                    document.getElementById("resCircle").innerText = getVal(6);
-                    document.getElementById("resAddress").innerText = getVal(7);
-                    document.getElementById("resRef").innerText = getVal(8);
-                    document.getElementById("resLives").innerText = getVal(9);
-                    document.getElementById("resStatus").innerText = getVal(10); // Work Status
+                    document.getElementById("resSl").value = getVal(0);
+                    document.getElementById("resName").value = getVal(1);
+                    document.getElementById("resTin").value = getVal(2);
+                    document.getElementById("resMobile").value = getVal(3);
+                    document.getElementById("resPassword").value = getVal(4);
+                    document.getElementById("resZone").value = getVal(5);
+                    document.getElementById("resCircle").value = getVal(6);
+                    document.getElementById("resAddress").value = getVal(7);
+                    document.getElementById("resRef").value = getVal(8);
+                    document.getElementById("resLives").value = getVal(9);
+                    document.getElementById("resStatus").innerText = getVal(10);
 
-                    resultBox.style.display = "block";
+                    resultTable.style.display = "table";
                     dataFound = true;
                     break; 
                 }
             }
 
             if (!dataFound) {
-                alert("দুঃখিত, এই নাম বা TIN নম্বরের কোনো তথ্য পাওয়া যায়নি!");
+                alert("Sorry, no data found for this Name or TIN!");
             }
 
         } catch (error) {
             console.error("Error:", error);
-            alert("ডাটা লোড করতে সমস্যা হয়েছে!");
+            alert("Failed to load database data!");
         } finally {
             loadingText.style.display = "none";
         }
