@@ -3,16 +3,13 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 15px; color: #333; }
+        body { font-family: sans-serif; padding: 20px; color: #333; }
         .container { max-width: 500px; margin: auto; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 10px; border: none; cursor: pointer; color: white; font-weight: bold; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; font-weight: bold; border-radius: 5px; }
         .btn-search { background: #007bff; }
         .btn-save { background: #28a745; margin-top: 10px; }
-        
-        /* নীল বাটন */
-        .collapsible-header { background: #0056b3; color: white; padding: 15px; text-align: center; cursor: pointer; border-radius: 4px; margin-top: 20px; }
-        #inputForm { display: none; padding: 15px; border: 1px solid #0056b3; border-top: none; }
+        #inputForm { display: none; padding: 15px; border: 1px solid #ccc; margin-top: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -20,15 +17,18 @@
 <div class="container">
     <h3>TAX Payment Database</h3>
     
-    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
+    <input type="text" id="searchInput" placeholder="Search Name or TIN...">
     <button class="btn btn-search" onclick="searchData()">Search</button>
+    <div id="resultArea" style="margin-top:15px; padding:10px; background:#f9f9f9;"></div>
 
-    <div class="collapsible-header" onclick="toggleForm()">&#11139;</div>
+    <div style="background:#0056b3; color:white; padding:10px; text-align:center; margin-top:20px; cursor:pointer;" onclick="toggleForm()">
+        &#10133; Add New Data
+    </div>
 
     <div id="inputForm">
-        <input type="text" id="sl" placeholder="Serial No *">
-        <input type="text" id="name" placeholder="Assessee Name *">
-        <input type="text" id="tin" placeholder="Tin *">
+        <input type="text" id="sl" placeholder="Serial No">
+        <input type="text" id="name" placeholder="Assessee Name">
+        <input type="text" id="tin" placeholder="TIN">
         <input type="text" id="mobile" placeholder="Mobile">
         <input type="text" id="zone" placeholder="Zone">
         <input type="text" id="circle" placeholder="Circle">
@@ -38,6 +38,9 @@
 </div>
 
 <script>
+    // আপনার লিংকটি নিচে বসানো হয়েছে
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+
     function toggleForm() {
         var f = document.getElementById("inputForm");
         f.style.display = (f.style.display === "block") ? "none" : "block";
@@ -45,11 +48,15 @@
 
     function searchData() {
         var query = document.getElementById("searchInput").value;
-        alert("সার্চ করা হচ্ছে: " + query + ". (দ্রষ্টব্য: আপনার গুগল শিট লিংকটি কানেক্ট করা নেই)");
-    }
-
-    function saveData() {
-        alert("ডাটা সেভ করা হচ্ছে... (আপনার Apps Script URL প্রয়োজন)");
+        var res = document.getElementById("resultArea");
+        res.innerText = "Searching...";
+        
+        fetch(SCRIPT_URL + "?q=" + query)
+            .then(response => response.json())
+            .then(data => {
+                res.innerText = data.length > 0 ? JSON.stringify(data) : "No data found!";
+            })
+            .catch(err => res.innerText = "Error: Could not connect to sheet.");
     }
 </script>
 
