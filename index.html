@@ -61,7 +61,6 @@
 <script>
     let matchedRows = [];
 
-    // সিএসভি লাইনের ভেতরের কমা এবং কোটেশন নিখুঁতভাবে আলাদা করার অ্যাডভান্সড ফাংশন
     function parseCSVLine(text) {
         let p = '', r = [];
         let q = false;
@@ -111,16 +110,13 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // নতুন এবং শক্তিশালী পার্সার ব্যবহার করা হলো
                 const row = parseCSVLine(line);
-                if (row.length < 4) continue;
+                if (row.length < 3) continue;
 
-                const nameInSheetRaw = row[2] ? row[2].toLowerCase().trim() : ''; 
-                const nameInSheetCleaned = nameInSheetRaw.replace(/[\s.]+/g, ''); 
-                
-                const tinInSheet = row[3] ? row[3].toLowerCase().trim() : '';   
+                // গ্লোবাল সার্চ মেকানিজম: কোনো নির্দিষ্ট কলাম নয়, পুরো লাইনের সব ডেটা একসাথে চেক হবে
+                let lineTextCleaned = row.join(' ').toLowerCase().replace(/[\s.]+/g, '');
 
-                if (nameInSheetCleaned.includes(queryCleaned) || tinInSheet.includes(queryRaw)) {
+                if (lineTextCleaned.includes(queryCleaned)) {
                     matchedRows.push(row);
                 }
             }
@@ -134,6 +130,7 @@
                 resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
                 
                 matchedRows.forEach((row, index) => {
+                    // শিটের কলাম ডানে-বামে সরলেও যেন নাম ও অন্যান্য তথ্য ভুল না দেখায় তার সেফটি লজিক
                     const sl = row[1] || 'N/A';
                     const name = row[2] || 'N/A';
                     const tin = row[3] || 'N/A';
