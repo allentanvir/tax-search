@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAX Payment Database Search</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -188,8 +189,6 @@
 </div>
 
 <script>
-    const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv`;
-
     async function searchFromSheet() {
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
         const resultTable = document.getElementById("resultTable");
@@ -203,24 +202,25 @@
         loadingText.style.display = "block";
         resultTable.style.display = "none";
 
+        // পুরোনো মেমোরি জ্যাম দূর করতে টাইমস্ট্যাম্প ব্যবহার
+        const cacheBuster = new Date().getTime();
+        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&t=${cacheBuster}`;
+
         try {
             const response = await fetch(url);
             const csvText = await response.text();
             
-            const lines = csvText.split(/\r?\n/);
+            // PapaParse লাইব্রেরি দিয়ে কমার ভেতরের অ্যাড্রেসকে সুরক্ষিত রেখে ডাটা পার্স করা
+            const parsedData = Papa.parse(csvText, { skipEmptyLines: true }).data;
             let dataFound = false;
 
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
+            // প্রথম লাইন (হেডার) বাদে লুপ চালানো
+            for (let i = 1; i < parsedData.length; i++) {
+                const row = parsedData[i];
 
-                // অ্যাড্রেসের ভেতরের কমা ও ডাবল কোটেশন নিখুঁতভাবে হ্যান্ডেল করার জন্য স্ট্যান্ডার্ড রিজেক্স
-                const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-
-                // ডাটা ম্যাচিং নিশ্চিত করতে কমপক্ষে ৩টি কলাম থাকতে হবে
                 if (row.length < 3) continue;
 
-                // শিটের কলাম বিন্যাস অনুযায়ী ডিরেক্ট ম্যাপিং (A=0, B=1, C=2...)
+                // কলাম বিন্যাস ফিক্সিং
                 const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
                 const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
@@ -228,19 +228,18 @@
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    // শিটের হেডারের সাথে ১:১ ম্যাপিং ফিক্স
-                    document.getElementById("resSl").value = getVal(0);         // Serial No (Column A)
-                    document.getElementById("resName").value = getVal(1);       // Assessee Name (Column B)
-                    document.getElementById("resTin").value = getVal(2);        // Tin (Column C)
-                    document.getElementById("resMobile").value = getVal(3);     // Mobail No (Column D)
-                    document.getElementById("resPassword").value = getVal(4);   // Password (Column E)
-                    document.getElementById("resZone").value = getVal(5);       // Zone (Column F)
-                    document.getElementById("resCircle").value = getVal(6);     // Circle (Column G)
-                    document.getElementById("resAddress").value = getVal(7);    // Address (Column H)
-                    document.getElementById("resRef").value = getVal(8);        // Ref (Column I)
-                    document.getElementById("resLives").value = getVal(9);       // Lives (Column J)
+                    // সঠিক বক্সে সঠিক মান বসানো হলো
+                    document.getElementById("resSl").value = getVal(0);         
+                    document.getElementById("resName").value = getVal(1);       
+                    document.getElementById("resTin").value = getVal(2);        
+                    document.getElementById("resMobile").value = getVal(3);     
+                    document.getElementById("resPassword").value = getVal(4);   
+                    document.getElementById("resZone").value = getVal(5);       
+                    document.getElementById("resCircle").value = getVal(6);     
+                    document.getElementById("resAddress").value = getVal(7);    
+                    document.getElementById("resRef").value = getVal(8);        
+                    document.getElementById("resLives").value = getVal(9);       
                     
-                    // Work Status কলাম (Column K)
                     if (row[10] !== undefined) {
                         document.getElementById("resStatus").innerText = row[10].trim();
                     } else {
