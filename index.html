@@ -3,18 +3,17 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; padding: 20px; background-color: #f4f4f4; }
-        .box { background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        h3 { color: #333; }
+        body { font-family: Arial; padding: 15px; background: #f4f4f4; }
+        .box { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="box">
         <h3>TAX Database Search</h3>
-        <input type="text" id="searchInput" placeholder="Search by TIN or Name...">
+        <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
         <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
     </div>
 
@@ -26,14 +25,16 @@
 
     <div id="addForm" class="box" style="display:none;">
         <h4>Add New Information</h4>
-        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="name" placeholder="Assessee Name">
         <input type="text" id="tin" placeholder="TIN">
-        <input type="text" id="mobile" placeholder="Mobile">
+        <input type="text" id="mobile" placeholder="Mobile No">
+        <input type="text" id="password" placeholder="Password">
         <input type="text" id="zone" placeholder="Zone">
         <input type="text" id="circle" placeholder="Circle">
         <input type="text" id="address" placeholder="Address">
-        <input type="text" id="status" placeholder="Status">
-        <input type="text" id="reference" placeholder="Reference">
+        <input type="text" id="ref" placeholder="Ref">
+        <input type="text" id="lives" placeholder="Lives">
+        <input type="text" id="work" placeholder="Work Status">
         <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
     </div>
 
@@ -46,7 +47,7 @@
             let res = data.filter(row => row.some(c => String(c).toLowerCase().includes(q)));
             let html = "<div class='box'><strong>Results:</strong><br>";
             res.forEach(row => {
-                html += `<p><b>Name:</b> ${row[1]}<br><b>TIN:</b> ${row[2]}<br><b>Mobile:</b> ${row[3]}<br><b>Address:</b> ${row[6]}</p><hr>`;
+                html += `<p><b>Name:</b> ${row[1]}<br><b>TIN:</b> ${row[2]}<br><b>Password:</b> ${row[4]}<br><b>Address:</b> ${row[7]}<br><b>Status:</b> ${row[10]}</p><hr>`;
             });
             document.getElementById("resultArea").innerHTML = html + "</div>";
         });
@@ -57,11 +58,13 @@
             name: document.getElementById("name").value,
             tin: document.getElementById("tin").value,
             mobile: document.getElementById("mobile").value,
+            password: document.getElementById("password").value,
             zone: document.getElementById("zone").value,
             circle: document.getElementById("circle").value,
             address: document.getElementById("address").value,
-            status: document.getElementById("status").value,
-            reference: document.getElementById("reference").value
+            ref: document.getElementById("ref").value,
+            lives: document.getElementById("lives").value,
+            work: document.getElementById("work").value
         };
         fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(payload)})
             .then(() => { alert("Saved Successfully!"); location.reload(); });
