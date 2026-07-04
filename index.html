@@ -1,31 +1,58 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        #addForm { display: none; margin-top: 20px; padding: 15px; border: 1px solid #007bff; }
+    </style>
+</head>
 <body>
+    <h3>TAX Database</h3>
     <input type="text" id="searchInput" placeholder="Search...">
     <button onclick="searchData()">Search</button>
-    <div id="resultArea" style="margin-top: 15px;"></div>
+    
+    <!-- নতুন ডাটা যোগ করার বাটন -->
+    <button onclick="toggleForm()" style="background:#28a745; color:white;">+ Add New Data</button>
+
+    <div id="addForm">
+        <input type="text" id="newData" placeholder="Enter full row data separated by commas">
+        <button onclick="uploadData()">Submit Upload</button>
+    </div>
+
+    <div id="resultArea" style="margin-top: 20px;"></div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+
+    function toggleForm() {
+        let f = document.getElementById("addForm");
+        f.style.display = (f.style.display === "block") ? "none" : "block";
+    }
 
     function searchData() {
         document.getElementById("resultArea").innerHTML = "Searching...";
         fetch(SCRIPT_URL).then(res => res.json()).then(data => {
             let q = document.getElementById("searchInput").value.toLowerCase();
-            let results = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
+            let res = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
             
-            if(results.length === 0) {
-                document.getElementById("resultArea").innerHTML = "No results found.";
-            } else {
-                let html = "<table border='1' style='width:100%; border-collapse:collapse;'>";
-                results.forEach(row => {
-                    html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
-                });
-                document.getElementById("resultArea").innerHTML = html + "</table>";
-            }
-        }).catch(err => {
-            document.getElementById("resultArea").innerHTML = "Error! Please check your Apps Script.";
+            let html = "<table><tr>";
+            data[0].forEach(header => html += "<th>" + header + "</th>"); // হেডার সেট করা
+            html += "</tr>";
+            
+            res.forEach(row => {
+                html += "<tr>";
+                row.forEach(cell => html += "<td>" + cell + "</td>");
+                html += "</tr>";
+            });
+            document.getElementById("resultArea").innerHTML = html + "</table>";
         });
+    }
+
+    function uploadData() {
+        alert("আপনার শিটের ডাটা আপডেট করার জন্য গুগল অ্যাপস স্ক্রিপ্টে doPost ফাংশনটি সক্রিয় থাকতে হবে।");
     }
 </script>
 </body>
