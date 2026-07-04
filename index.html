@@ -83,6 +83,13 @@
 
         try {
             const response = await fetch(url);
+            
+            // পারমিশন লক থাকলে এরর মেসেজ হ্যান্ডলিং
+            if (!response.ok) {
+                alert("Error: গুগল শিট থেকে ডেটা আনা যাচ্ছে না! দয়া করে আপনার গুগল শিটের Share সেটিংস থেকে 'Anyone with the link' অপশনটি অন করুন।");
+                return;
+            }
+
             const csvText = await response.text();
             const lines = csvText.split(/\r?\n/);
 
@@ -118,4 +125,44 @@
                     
                     const item = document.createElement("div");
                     item.className = "result-item";
-                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin} | <strong>Mobile:</strong> ${mobile}
+                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin} | <strong>Mobile:</strong> ${mobile} | <strong>Ref:</strong> ${ref}`;
+                    
+                    item.onclick = function() { showTaxpayerDetails(index); };
+                    resultsList.appendChild(item);
+                });
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to load database data!");
+        } finally {
+            loadingText.style.display = "none";
+        }
+    }
+
+    function showTaxpayerDetails(index) {
+        const row = matchedRows[index];
+        const resultTable = document.getElementById("resultTable");
+        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
+
+        document.getElementById("resSl").value = getVal(1);         
+        document.getElementById("resName").value = getVal(2);       
+        document.getElementById("resTin").value = getVal(3);        
+        document.getElementById("resMobile").value = getVal(4);     
+        document.getElementById("resPassword").value = getVal(5);   
+        document.getElementById("resZone").value = getVal(6);       
+        document.getElementById("resCircle").value = getVal(7);     
+        document.getElementById("resAddress").value = getVal(8);    
+        document.getElementById("resRef").value = getVal(9);        
+        document.getElementById("resLives").value = getVal(10);     
+        
+        if (row[11] !== undefined) {
+            document.getElementById("resStatus").innerText = row[11].trim(); 
+        } else {
+            document.getElementById("resStatus").innerText = 'N/A';
+        }
+        resultTable.style.display = "table";
+    }
+</script>
+
+</body>
+</html>
