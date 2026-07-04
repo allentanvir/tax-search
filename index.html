@@ -7,12 +7,14 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 30px; color: #555555; }
         .container { max-width: 650px; margin: 0 auto; }
-        .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; }
+        .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold; }
+        .section-title { font-size: 16px; color: #007bff; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
         .search-row { display: flex; align-items: center; margin-bottom: 20px; }
         .search-row label { width: 150px; font-size: 14px; color: #333333; font-weight: bold; }
         .input-group { display: flex; flex: 1; gap: 10px; }
-        input[type="text"] { width: 100%; padding: 7px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; outline: none; }
+        input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; outline: none; box-sizing: border-box; }
         .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-submit { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; }
         .loading { display: none; font-size: 13px; color: #666; margin-bottom: 15px; font-style: italic; }
         
         .results-list { display: none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 20px; }
@@ -20,22 +22,24 @@
         .result-item { padding: 10px 14px; background: #fff; border: 1px solid #eee; margin-bottom: 6px; cursor: pointer; border-radius: 4px; font-size: 13px; line-height: 1.5; }
         .result-item:hover { background: #e3f2fd; border-color: #bbdefb; }
         
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; }
-        .result-table td { padding: 8px 0; font-size: 14px; }
-        .result-table td.label-cell { width: 150px; color: #333333; font-weight: bold; }
-        .result-table input, .result-table textarea { width: 100%; padding: 7px 10px; border: 1px solid #cccccc; border-radius: 4px; background-color: #f8f9fa; color: #333333; font-size: 14px; box-sizing: border-box; resize: none; outline: none; }
+        .result-table, .input-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .result-table { display: none; }
+        td { padding: 6px 0; font-size: 14px; }
+        td.label-cell { width: 150px; color: #333333; font-weight: bold; }
+        .result-table input, .result-table textarea { background-color: #f8f9fa; color: #333333; }
         .status-badge { display: inline-block; background-color: #17a2b8; color: white; padding: 5px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="page-title">TAX Payment Database (Data Name)</div>
+    <div class="page-title">TAX Payment Database (Data Sheet)</div>
     
+    <div class="section-title">🔍 Search Database</div>
     <div class="search-row">
         <label>Search Taxpayer *</label>
         <div class="input-group">
-            <input type="text" id="searchInput" placeholder="Enter Name or TIN...">
+            <input type="text" id="searchInput" placeholder="Enter Assessee Name or TIN...">
             <button class="btn-search" onclick="searchFromSheet()">Search</button>
         </div>
     </div>
@@ -44,7 +48,7 @@
     <div id="resultsList" class="results-list"></div>
 
     <table class="result-table" id="resultTable">
-        <tr><td class="label-cell">SL.</td><td><input type="text" id="resSl" readonly></td></tr>
+        <tr><td class="label-cell">Serial No</td><td><input type="text" id="resSl" readonly></td></tr>
         <tr><td class="label-cell">Assessee Name</td><td><input type="text" id="resName" readonly></td></tr>
         <tr><td class="label-cell">Tin</td><td><input type="text" id="resTin" readonly></td></tr>
         <tr><td class="label-cell">Mobail No</td><td><input type="text" id="resMobile" readonly></td></tr>
@@ -56,26 +60,46 @@
         <tr><td class="label-cell">Lives</td><td><input type="text" id="resLives" readonly></td></tr>
         <tr><td class="label-cell">Work Status</td><td><span id="resStatus" class="status-badge"></span></td></tr>
     </table>
+
+    <div class="section-title">📥 Input New Data (Save to Sheet)</div>
+    <form id="inputForm" onsubmit="insertToSheet(event)">
+        <table class="input-table">
+            <tr><td class="label-cell">Serial No *</td><td><input type="text" id="inSl" required placeholder="e.g. 14"></td></tr>
+            <tr><td class="label-cell">Assessee Name *</td><td><input type="text" id="inName" required></td></tr>
+            <tr><td class="label-cell">Tin *</td><td><input type="text" id="inTin" required></td></tr>
+            <tr><td class="label-cell">Mobail No</td><td><input type="text" id="inMobile"></td></tr>
+            <tr><td class="label-cell">Password</td><td><input type="text" id="inPassword"></td></tr>
+            <tr><td class="label-cell">Zone</td><td><input type="text" id="inZone"></td></tr>
+            <tr><td class="label-cell">Circle</td><td><input type="text" id="inCircle"></td></tr>
+            <tr><td class="label-cell">Address</td><td><textarea id="inAddress" rows="2"></textarea></td></tr>
+            <tr><td class="label-cell">Ref</td><td><input type="text" id="inRef"></td></tr>
+            <tr><td class="label-cell">Lives</td><td><input type="text" id="inLives"></td></tr>
+            <tr><td class="label-cell">Work Status</td><td>
+                <select id="inStatus">
+                    <option value="Tanvir">Tanvir</option>
+                    <option value="Mehedi">Mehedi</option>
+                    <option value="Shovo">Shovo</option>
+                </select>
+            </td></tr>
+        </table>
+        <button type="submit" class="btn-submit" id="submitBtn">Save Data to Sheet</button>
+    </form>
+    <div id="inputLoading" class="loading" style="margin-top:10px;">Saving data to Google Sheet... Please wait.</div>
 </div>
 
 <script>
+    // ⚠️ এই লাইনে আপনার নিজের জেনারেট করা Apps Script Web App লিংকটি বসাবেন ভাই
+    const SCRIPT_URL = "https://script.google.com/macros/s/xxxxxxxxx/exec"; 
+
     let matchedRows = [];
 
     function cleanCSVCells(text) {
-        let cells = [];
-        let current = '';
-        let inQuotes = false;
-        
+        let cells = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
             let char = text[i];
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                cells.push(current.trim());
-                current = '';
-            } else {
-                current += char;
-            }
+            if (char === '"') { inQuotes = !inQuotes; } 
+            else if (char === ',' && !inQuotes) { cells.push(current.trim()); current = ''; } 
+            else { current += char; }
         }
         cells.push(current.trim());
         return cells;
@@ -83,10 +107,7 @@
 
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
-        if (!queryRaw) {
-            alert("Please enter Name or TIN!");
-            return;
-        }
+        if (!queryRaw) { alert("Please enter Name or TIN!"); return; }
 
         const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
@@ -99,84 +120,108 @@
         matchedRows = [];
 
         const cacheBuster = new Date().getTime();
-        
-        // এখানে সরাসরি 'sheet=Data Name' নির্দিষ্ট করে লিংকটি দেওয়া হয়েছে
-        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data%20Name&t=${cacheBuster}`;
+        const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data&t=${cacheBuster}`;
 
         try {
             const response = await fetch(url);
-            if (!response.ok) {
-                alert("Error: গুগল শিট থেকে ডেটা আনা যাচ্ছে না!");
-                return;
-            }
-
             const csvText = await response.text();
             const lines = csvText.split(/\r?\n/);
 
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
+                const line = lines[i].trim(); if (!line) continue;
+                const row = cleanCSVCells(line); if (row.length < 3) continue;
 
-                const row = cleanCSVCells(line);
-                const fullLineText = row.join(' ').toLowerCase();
+                // 🎯 ফিক্সড ইনডেক্সিং: কলাম A=0 (SL), কলাম B=1 (Name), কলাম C=2 (TIN)
+                const assesseeName = (row[1] || '').toLowerCase(); 
+                const tinNumber = (row[2] || '').toLowerCase();    
 
-                if (fullLineText.includes(queryRaw)) {
+                // শুধু নাম অথবা টিনের সাথে ম্যাচ করানোর ফিল্টার
+                if (assesseeName.includes(queryRaw) || tinNumber.includes(queryRaw)) {
                     matchedRows.push(row);
                 }
             }
 
-            if (matchedRows.length === 0) {
-                alert("Sorry, no data found in Data Name sheet!");
-            } else if (matchedRows.length === 1) {
-                showTaxpayerDetails(0);
-            } else {
+            if (matchedRows.length === 0) { alert("Sorry, no data found matching that Assessee Name or TIN!"); } 
+            else if (matchedRows.length === 1) { showTaxpayerDetails(0); } 
+            else {
                 resultsList.style.display = "block";
-                resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) results found. Please choose one:</p>`;
-                
+                resultsList.innerHTML = `<p>Multiple results found:</p>`;
                 matchedRows.forEach((row, index) => {
-                    const sl = row[0] || 'N/A';
-                    const name = row[1] || 'N/A';
-                    const tin = row[2] || 'N/A';
-                    
-                    const item = document.createElement("div");
-                    item.className = "result-item";
-                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin}`;
-                    item.onclick = function() { showTaxpayerDetails(index); };
-                    resultsList.appendChild(item);
+                    // এখানেও ইনডেক্স ০=SL, ১=Name, ২=TIN ঠিক করা হয়েছে
+                    resultsList.innerHTML += `<div class="result-item" onclick="showTaxpayerDetails(${index})"><strong>SL:</strong> ${row[0]} | <strong>Name:</strong> ${row[1]} | <strong>TIN:</strong> ${row[2]}</div>`;
                 });
             }
-        } catch (error) {
-            console.error("Error during search:", error);
-            alert("An error occurred. Please try again!");
-        } finally {
-            loadingText.style.display = "none";
-        }
+        } catch (error) { alert("Failed to fetch search data!"); } 
+        finally { loadingText.style.display = "none"; }
     }
 
     function showTaxpayerDetails(index) {
         const row = matchedRows[index];
-        const resultTable = document.getElementById("resultTable");
         const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
+        
+        // 🎯 টেবিল ভিউ ডিরেক্ট ম্যাপিং (A=0, B=1, C=2, D=3...)
+        document.getElementById("resSl").value = getVal(0);       // Column A: Serial No
+        document.getElementById("resName").value = getVal(1);     // Column B: Assessee Name
+        document.getElementById("resTin").value = getVal(2);      // Column C: Tin
+        document.getElementById("resMobile").value = getVal(3);   // Column D: Mobail No
+        document.getElementById("resPassword").value = getVal(4); // Column E: Password
+        document.getElementById("resZone").value = getVal(5);     // Column F: Zone
+        document.getElementById("resCircle").value = getVal(6);   // Column G: Circle
+        document.getElementById("resAddress").value = getVal(7);  // Column H: Address
+        document.getElementById("resRef").value = getVal(8);      // Column I: Ref
+        document.getElementById("resLives").value = getVal(9);    // Column J: Lives
+        document.getElementById("resStatus").innerText = getVal(10); // Column K: Work Status
+        
+        document.getElementById("resultTable").style.display = "table";
+    }
 
-        // 'Data Name' শিটের কলাম অনুযায়ী নিখুঁত ডিরেক্ট ম্যাপিং
-        document.getElementById("resSl").value = getVal(0);         
-        document.getElementById("resName").value = getVal(1);       
-        document.getElementById("resTin").value = getVal(2);        
-        document.getElementById("resMobile").value = getVal(3);     
-        document.getElementById("resPassword").value = getVal(4);   
-        document.getElementById("resZone").value = getVal(5);       
-        document.getElementById("resCircle").value = getVal(6);     
-        document.getElementById("resAddress").value = getVal(7);    
-        document.getElementById("resRef").value = getVal(8);        
-        document.getElementById("resLives").value = getVal(9);     
+    // ডাটা ইনপুট মেকানিজম
+    async function insertToSheet(event) {
+        event.preventDefault();
         
-        if (row[10] !== undefined && row[10] !== '') {
-            document.getElementById("resStatus").innerText = row[10].trim(); 
-        } else {
-            document.getElementById("resStatus").innerText = 'N/A';
+        if(SCRIPT_URL.includes("xxxxxxxxx")) {
+            alert("দয়া করে কোডের ভেতর SCRIPT_URL এর জায়গায় আপনার Apps Script Web App লিংকটি বসান!");
+            return;
         }
+
+        const submitBtn = document.getElementById("submitBtn");
+        const inputLoading = document.getElementById("inputLoading");
         
-        resultTable.style.display = "table";
+        submitBtn.disabled = true;
+        inputLoading.style.display = "block";
+
+        const payload = {
+            sl: document.getElementById("inSl").value,
+            name: document.getElementById("inName").value,
+            tin: document.getElementById("inTin").value,
+            mobile: document.getElementById("inMobile").value,
+            password: document.getElementById("inPassword").value,
+            zone: document.getElementById("inZone").value,
+            circle: document.getElementById("inCircle").value,
+            address: document.getElementById("inAddress").value,
+            ref: document.getElementById("inRef").value,
+            lives: document.getElementById("inLives").value,
+            status: document.getElementById("inStatus").value
+        };
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                cache: "no-cache",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            alert("Data submitted successfully! গুগল শিটের 'Data' ট্যাবে ডাটা সেভ হয়ে গেছে।");
+            document.getElementById("inputForm").reset();
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Error saving data. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            inputLoading.style.display = "none";
+        }
     }
 </script>
 
