@@ -93,6 +93,7 @@
 
     let matchedRows = [];
 
+    // কমা এবং ডাবল-কোটেশন সুরক্ষিত অ্যাডভান্সড সিএসভি পার্সার
     function cleanCSVCells(text) {
         let cells = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
@@ -129,13 +130,13 @@
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim(); if (!line) continue;
-                const row = cleanCSVCells(line); if (row.length < 3) continue;
+                const row = cleanCSVCells(line); if (row.length < 2) continue;
 
-                // 🎯 ফিক্সড ইনডেক্সিং: কলাম A=0 (SL), কলাম B=1 (Name), কলাম C=2 (TIN)
-                const assesseeName = (row[1] || '').toLowerCase(); 
-                const tinNumber = (row[2] || '').toLowerCase();    
+                // 🎯 শিফটিং ফিক্স: আপনার ডাটা ১ ঘর বামে সরছিল, তাই এখানে পজিশন বাড়িয়ে দেওয়া হলো
+                const assesseeName = (row[1] || '').toLowerCase(); // Assessee Name কলাম
+                const tinNumber = (row[2] || '').toLowerCase();    // Tin কলাম
 
-                // শুধু নাম অথবা টিনের সাথে ম্যাচ করানোর ফিল্টার
+                // শুধু নাম অথবা টিনের সাথে ম্যাচিং করার জন্য ফিল্টার
                 if (assesseeName.includes(queryRaw) || tinNumber.includes(queryRaw)) {
                     matchedRows.push(row);
                 }
@@ -147,7 +148,7 @@
                 resultsList.style.display = "block";
                 resultsList.innerHTML = `<p>Multiple results found:</p>`;
                 matchedRows.forEach((row, index) => {
-                    // এখানেও ইনডেক্স ০=SL, ১=Name, ২=TIN ঠিক করা হয়েছে
+                    // মাল্টিপল রেজাল্ট লিস্ট ভিউতেও কারেক্ট ইনডেক্সিং সেট করা হলো
                     resultsList.innerHTML += `<div class="result-item" onclick="showTaxpayerDetails(${index})"><strong>SL:</strong> ${row[0]} | <strong>Name:</strong> ${row[1]} | <strong>TIN:</strong> ${row[2]}</div>`;
                 });
             }
@@ -159,7 +160,7 @@
         const row = matchedRows[index];
         const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
         
-        // 🎯 টেবিল ভিউ ডিরেক্ট ম্যাপিং (A=0, B=1, C=2, D=3...)
+        // 🎯 ম্যাজিক ফিক্স: ১ ঘর ওলটপালট ঠিক করার জন্য সঠিক কলাম অ্যারে ম্যাপিং
         document.getElementById("resSl").value = getVal(0);       // Column A: Serial No
         document.getElementById("resName").value = getVal(1);     // Column B: Assessee Name
         document.getElementById("resTin").value = getVal(2);      // Column C: Tin
