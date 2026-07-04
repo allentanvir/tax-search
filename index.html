@@ -1,58 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        #addForm { display: none; margin-top: 20px; padding: 15px; border: 1px solid #007bff; }
+        body { font-family: Arial, sans-serif; padding: 15px; }
+        .input-group { margin-bottom: 10px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        .btn { padding: 10px 20px; cursor: pointer; color: white; border: none; }
+        #addForm { display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; background: #f9f9f9; }
     </style>
 </head>
 <body>
-    <h3>TAX Database</h3>
-    <input type="text" id="searchInput" placeholder="Search...">
-    <button onclick="searchData()">Search</button>
-    
-    <!-- নতুন ডাটা যোগ করার বাটন -->
-    <button onclick="toggleForm()" style="background:#28a745; color:white;">+ Add New Data</button>
 
-    <div id="addForm">
-        <input type="text" id="newData" placeholder="Enter full row data separated by commas">
-        <button onclick="uploadData()">Submit Upload</button>
+    <h3>TAX Payment</h3>
+    <div class="input-group">
+        <label>TIN*</label>
+        <div style="display:flex;">
+            <input type="text" id="tinSearch" placeholder="Enter TIN to search...">
+            <button class="btn" style="background:#007bff;" onclick="searchByTIN()">🔍</button>
+        </div>
     </div>
 
-    <div id="resultArea" style="margin-top: 20px;"></div>
+    <div id="resultArea"></div>
+
+    <button onclick="document.getElementById('addForm').style.display='block'" style="font-size:24px; cursor:pointer;">➕</button>
+
+    <div id="addForm">
+        <h4>Add New Data</h4>
+        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="tin" placeholder="TIN">
+        <input type="text" id="address" placeholder="Address">
+        <input type="text" id="zone" placeholder="Taxes Zone">
+        <input type="text" id="circle" placeholder="Taxes Circle">
+        <input type="text" id="account" placeholder="Account Code">
+        <button class="btn" style="background:#28a745; margin-top:10px;" onclick="saveData()">Save Data</button>
+        <button class="btn" style="background:#dc3545;" onclick="this.parentElement.style.display='none'">Close</button>
+    </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
-    function toggleForm() {
-        let f = document.getElementById("addForm");
-        f.style.display = (f.style.display === "block") ? "none" : "block";
-    }
-
-    function searchData() {
-        document.getElementById("resultArea").innerHTML = "Searching...";
-        fetch(SCRIPT_URL).then(res => res.json()).then(data => {
-            let q = document.getElementById("searchInput").value.toLowerCase();
-            let res = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
-            
-            let html = "<table><tr>";
-            data[0].forEach(header => html += "<th>" + header + "</th>"); // হেডার সেট করা
-            html += "</tr>";
-            
-            res.forEach(row => {
-                html += "<tr>";
-                row.forEach(cell => html += "<td>" + cell + "</td>");
-                html += "</tr>";
+    function searchByTIN() {
+        let tin = document.getElementById("tinSearch").value;
+        fetch(SCRIPT_URL + "?q=" + tin)
+            .then(res => res.json())
+            .then(data => {
+                let found = data.find(row => row[2] == tin); // ধরে নিচ্ছি TIN ৩য় কলামে
+                if(found) {
+                    document.getElementById("resultArea").innerHTML = 
+                    `<p>Name: ${found[1]}</p><p>Address: ${found[6]}</p><p>Zone: ${found[4]}</p>`;
+                } else {
+                    alert("No Data Found!");
+                }
             });
-            document.getElementById("resultArea").innerHTML = html + "</table>";
-        });
     }
 
-    function uploadData() {
-        alert("আপনার শিটের ডাটা আপডেট করার জন্য গুগল অ্যাপস স্ক্রিপ্টে doPost ফাংশনটি সক্রিয় থাকতে হবে।");
+    function saveData() {
+        let data = {
+            name: document.getElementById("name").value,
+            tin: document.getElementById("tin").value,
+            address: document.getElementById("address").value,
+            zone: document.getElementById("zone").value,
+            circle: document.getElementById("circle").value,
+            account: document.getElementById("account").value
+        };
+        fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(data)})
+            .then(() => alert("Saved Successfully!"));
     }
 </script>
 </body>
