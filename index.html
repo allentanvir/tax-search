@@ -214,9 +214,11 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
+                // কমার ভেতরের টেক্সট সঠিকভাবে আলাদা করার রেগুলার এক্সপ্রেশন
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
-                if (row.length < 3) continue;
+                // যদি কোনো কারণে কলাম ভেঙে যায়, তাও যেন অন্তত নাম ও টিন চেক করতে পারে
+                if (row.length < 2) continue;
 
                 const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
                 const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
@@ -235,7 +237,12 @@
                     document.getElementById("resAddress").value = getVal(7);  
                     document.getElementById("resRef").value = getVal(8);     
                     document.getElementById("resLives").value = getVal(9);    
-                    document.getElementById("resStatus").innerText = getVal(10).trim(); 
+                    
+                    if (row[10] !== undefined) {
+                        document.getElementById("resStatus").innerText = row[10].trim();
+                    } else {
+                        document.getElementById("resStatus").innerText = 'N/A';
+                    }
 
                     resultTable.style.display = "table";
                     dataFound = true;
