@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <input type="text" id="s" placeholder="Search...">
-    <button onclick="f()">Search</button>
-    <div id="r"></div>
+    <input type="text" id="searchInput" placeholder="Search...">
+    <button onclick="searchData()">Search</button>
+    <div id="resultArea" style="margin-top: 15px;"></div>
 
 <script>
-    // আপনার লিংকটি নিচে বসানো আছে
-    const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
-    function f() {
-        document.getElementById("r").innerHTML = "Searching...";
-        fetch(URL).then(res => res.json()).then(data => {
-            let q = document.getElementById("s").value.toLowerCase();
-            let res = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
-            let html = "<table border='1'>";
-            res.forEach(row => { html += "<tr><td>" + row.join("</td><td>") + "</td></tr>"; });
-            document.getElementById("r").innerHTML = html + "</table>";
+    function searchData() {
+        document.getElementById("resultArea").innerHTML = "Searching...";
+        fetch(SCRIPT_URL).then(res => res.json()).then(data => {
+            let q = document.getElementById("searchInput").value.toLowerCase();
+            let results = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
+            
+            if(results.length === 0) {
+                document.getElementById("resultArea").innerHTML = "No results found.";
+            } else {
+                let html = "<table border='1' style='width:100%; border-collapse:collapse;'>";
+                results.forEach(row => {
+                    html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
+                });
+                document.getElementById("resultArea").innerHTML = html + "</table>";
+            }
+        }).catch(err => {
+            document.getElementById("resultArea").innerHTML = "Error! Please check your Apps Script.";
         });
     }
 </script>
