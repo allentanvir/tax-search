@@ -32,11 +32,6 @@
             margin-bottom: 12px;
             font-size: 16px;
             box-sizing: border-box;
-            transition: 0.2s;
-        }
-        input[type="text"]:focus {
-            border-color: #3498db;
-            outline: none;
         }
         button {
             width: 100%;
@@ -48,12 +43,10 @@
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: 0.2s;
         }
         button:hover { background-color: #219653; }
         .loading { display: none; color: #7f8c8d; text-align: center; margin-top: 10px; font-style: italic; }
         
-        /* রেজাল্ট বক্স ডিজাইন */
         .result-box {
             margin-top: 25px;
             padding-top: 20px;
@@ -85,9 +78,8 @@
     <button onclick="searchFromSheet()">Search</button>
     <div id="loadingText" class="loading">গুগল শিট থেকে তথ্য খোঁজা হচ্ছে...</div>
 
-    <!-- রেজাল্ট দেখানোর বক্স -->
+    <!-- রেজাল্ট দেখানোর বক্স (আপনার শিটের সাথে মিলিয়ে সাজানো) -->
     <div class="result-box" id="resultBox">
-        <div class="info-row"><strong>SL:</strong> <span id="resSl"></span></div>
         <div class="info-row"><strong>Assessee Name:</strong> <span id="resName"></span></div>
         <div class="info-row"><strong>TIN:</strong> <span id="resTin"></span></div>
         <div class="info-row"><strong>Mobile No:</strong> <span id="resMobile"></span></div>
@@ -103,11 +95,7 @@
 </div>
 
 <script>
-    // আপনার দেওয়া গুগল শিট আইডি
-    const sheetId = '14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU';
-    const sheetName = 'Sheet1'; // আপনার শিটের নিচের ট্যাবের নাম যদি আলাদা হয়, তবে 'Sheet1' এর জায়গায় সেটি লিখবেন
-    
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+    const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv`;
 
     async function searchFromSheet() {
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
@@ -124,37 +112,40 @@
 
         try {
             const response = await fetch(url);
-            const text = await response.text();
+            const csvText = await response.text();
             
-            // গুগলের সিকিউরিটি টেক্সট বাদ দিয়ে JSON অবজেক্ট তৈরি
-            const jsonData = JSON.parse(text.substring(47, text.length - 2));
-            const rows = jsonData.table.rows;
+            const rows = csvText.split("\n").map(row => {
+                return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+            });
 
             let dataFound = false;
 
-            for (let row of rows) {
-                // কলাম B তে নাম এবং কলাম C তে TIN আছে ধরে চেক করা হচ্ছে
-                const nameInSheet = row.c[1] ? row.c[1].v.toString().toLowerCase() : '';
-                const tinInSheet = row.c[2] ? row.c[2].v.toString().toLowerCase() : '';
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.length < 2) continue; 
 
-                // নাম অথবা টিন নম্বরের সাথে ম্যাচ করলে ডাটা শো করবে
+                // আপনার শিটের কলাম পজিশন এখন ফিক্সড:
+                // কলাম A (index 0) = Assessee Name
+                // কলাম B (index 1) = TIN
+                const nameInSheet = row[0] ? row[0].toLowerCase() : ''; 
+                const tinInSheet = row[1] ? row[1].toLowerCase() : '';   
+
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
                     
-                    // ভ্যালু অ্যাসাইন করার ফাংশন (ডাটা খালি থাকলে 'N/A' দেখাবে)
-                    const getVal = (index) => (row.c[index] && row.c[index].v !== null) ? row.c[index].v : 'N/A';
+                    const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    document.getElementById("resSl").innerText = getVal(0);
-                    document.getElementById("resName").innerText = getVal(1);
-                    document.getElementById("resTin").innerText = getVal(2);
-                    document.getElementById("resMobile").innerText = getVal(3);
-                    document.getElementById("resPassword").innerText = getVal(4);
-                    document.getElementById("resZone").innerText = getVal(5);
-                    document.getElementById("resCircle").innerText = getVal(6);
-                    document.getElementById("resAddress").innerText = getVal(7);
-                    document.getElementById("resRef").innerText = getVal(8);
-                    document.getElementById("resLives").innerText = getVal(9);
-                    document.getElementById("resWork").innerText = getVal(10);
-                    document.getElementById("resStatus").innerText = getVal(11);
+                    // কলাম ইনডেক্স ১ ঘর করে এগিয়ে দেওয়া হলো
+                    document.getElementById("resName").innerText = getVal(0);
+                    document.getElementById("resTin").innerText = getVal(1);
+                    document.getElementById("resMobile").innerText = getVal(2);
+                    document.getElementById("resPassword").innerText = getVal(3);
+                    document.getElementById("resZone").innerText = getVal(4);
+                    document.getElementById("resCircle").innerText = getVal(5);
+                    document.getElementById("resAddress").innerText = getVal(6);
+                    document.getElementById("resRef").innerText = getVal(7);
+                    document.getElementById("resLives").innerText = getVal(8);
+                    document.getElementById("resWork").innerText = getVal(9);
+                    document.getElementById("resStatus").innerText = getVal(10);
 
                     resultBox.style.display = "block";
                     dataFound = true;
@@ -168,7 +159,7 @@
 
         } catch (error) {
             console.error("Error:", error);
-            alert("ডাটা লোড করতে সমস্যা হয়েছে! নিশ্চিত করুন যে আপনার গুগল শিটটি 'Anyone with the link' করা আছে।");
+            alert("ডাটা লোড করতে সমস্যা হয়েছে!");
         } finally {
             loadingText.style.display = "none";
         }
