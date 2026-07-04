@@ -214,12 +214,13 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কমার ভেতরের টেক্সট সঠিকভাবে আলাদা করার রেগুলার এক্সপ্রেশন
+                // অ্যাড্রেসের ভেতরের কমা ও ডাবল কোটেশন নিখুঁতভাবে হ্যান্ডেল করার জন্য স্ট্যান্ডার্ড রিজেক্স
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
-                // যদি কোনো কারণে কলাম ভেঙে যায়, তাও যেন অন্তত নাম ও টিন চেক করতে পারে
-                if (row.length < 2) continue;
+                // ডাটা ম্যাচিং নিশ্চিত করতে কমপক্ষে ৩টি কলাম থাকতে হবে
+                if (row.length < 3) continue;
 
+                // শিটের কলাম বিন্যাস অনুযায়ী ডিরেক্ট ম্যাপিং (A=0, B=1, C=2...)
                 const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
                 const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
@@ -227,17 +228,19 @@
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    document.getElementById("resSl").value = getVal(0);       
-                    document.getElementById("resName").value = getVal(1);     
-                    document.getElementById("resTin").value = getVal(2);      
-                    document.getElementById("resMobile").value = getVal(3);   
-                    document.getElementById("resPassword").value = getVal(4); 
-                    document.getElementById("resZone").value = getVal(5);     
-                    document.getElementById("resCircle").value = getVal(6);   
-                    document.getElementById("resAddress").value = getVal(7);  
-                    document.getElementById("resRef").value = getVal(8);     
-                    document.getElementById("resLives").value = getVal(9);    
+                    // শিটের হেডারের সাথে ১:১ ম্যাপিং ফিক্স
+                    document.getElementById("resSl").value = getVal(0);         // Serial No (Column A)
+                    document.getElementById("resName").value = getVal(1);       // Assessee Name (Column B)
+                    document.getElementById("resTin").value = getVal(2);        // Tin (Column C)
+                    document.getElementById("resMobile").value = getVal(3);     // Mobail No (Column D)
+                    document.getElementById("resPassword").value = getVal(4);   // Password (Column E)
+                    document.getElementById("resZone").value = getVal(5);       // Zone (Column F)
+                    document.getElementById("resCircle").value = getVal(6);     // Circle (Column G)
+                    document.getElementById("resAddress").value = getVal(7);    // Address (Column H)
+                    document.getElementById("resRef").value = getVal(8);        // Ref (Column I)
+                    document.getElementById("resLives").value = getVal(9);       // Lives (Column J)
                     
+                    // Work Status কলাম (Column K)
                     if (row[10] !== undefined) {
                         document.getElementById("resStatus").innerText = row[10].trim();
                     } else {
