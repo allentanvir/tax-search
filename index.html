@@ -10,33 +10,30 @@
         .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold; }
         .section-title { font-size: 16px; color: #007bff; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
         
+        /* 📜 শুধুমাত্র এই লেখাটি স্ক্রিনে থাকবে, দেখতে ক্লিক করার মতো বাটন স্টাইল */
         .collapsible-header { 
             font-size: 16px; 
-            color: white; 
-            background-color: #007bff; 
-            margin-top: 30px; 
-            margin-bottom: 0px; 
-            padding: 12px 15px; 
+            color: #007bff; 
+            margin-top: 35px; 
+            margin-bottom: 15px; 
+            padding: 5px 0;
             font-weight: bold; 
             cursor: pointer; 
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: inline-block; /* যেন পুরো স্ক্রিন জুড়ে বাটন না হয়ে যায় */
             user-select: none;
-            transition: background 0.2s;
+            border-bottom: 1px dashed #007bff; /* চেনার সুবিধার্থে নিচে ড্যাশ বর্ডার */
         }
-        .collapsible-header:hover { background-color: #0056b3; }
-        .collapsible-icon { font-size: 14px; transition: transform 0.3s; }
+        .collapsible-header:hover { color: #0056b3; border-bottom-color: #0056b3; }
         
+        /* 🔐 ইনপুট ফর্মের মেইন কন্টেইনার (ডিফল্টভাবে পেজে হাইড থাকবে) */
         .collapsible-content { 
             display: none; 
-            overflow: hidden; 
-            border: 1px solid #007bff;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-            padding: 20px;
-            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 25px;
+            background-color: #fbfbfb;
+            margin-top: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         .search-row { display: flex; align-items: center; margin-bottom: 20px; }
@@ -44,10 +41,11 @@
         .input-group { display: flex; flex: 1; gap: 10px; }
         input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; outline: none; box-sizing: border-box; }
         
-        #inSl { background-color: #f8f9fa; font-weight: bold; color: #333; }
+        /* অটো সিরিয়াল বক্সের জন্য রিড-অনলি স্টাইল */
+        #inSl { background-color: #f1f3f5; font-weight: bold; color: #333; }
         
         .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-submit { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; }
+        .btn-submit { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; font-size: 15px; }
         .loading { display: none; font-size: 13px; color: #666; margin-bottom: 15px; font-style: italic; }
         
         .results-list { display: none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 20px; }
@@ -95,8 +93,7 @@
     </table>
 
     <div class="collapsible-header" onclick="toggleInputForm()">
-        <span>📥 Input New Data (Save to Sheet)</span>
-        <span id="formIcon" class="collapsible-icon">▼</span>
+        📥 Input New Data (Save to Sheet)
     </div>
     
     <div id="inputFormContainer" class="collapsible-content">
@@ -104,7 +101,7 @@
             <table class="input-table">
                 <tr>
                     <td class="label-cell">Serial No *</td>
-                    <td><input type="text" id="inSl" required placeholder="Auto calculating..."></td>
+                    <td><input type="text" id="inSl" readonly placeholder="Auto calculating Serial..."></td>
                 </tr>
                 <tr><td class="label-cell">Assessee Name *</td><td><input type="text" id="inName" required></td></tr>
                 <tr><td class="label-cell">Tin *</td><td><input type="text" id="inTin" required></td></tr>
@@ -135,25 +132,24 @@
 
     let matchedRows = [];
 
+    // পেজ লোড হবার সাথে সাথে ব্যাকগ্রাউন্ডে লাস্ট সিরিয়াল নম্বর সিঙ্ক করে নেবে
     window.addEventListener('DOMContentLoaded', () => {
         fetchNextSerialNumber();
     });
 
+    // 📥 ক্লিক করলে ফুল ইনপুট পেজ বা ফর্ম ওপেন/ক্লোজ করার ফাংশন
     function toggleInputForm() {
         const container = document.getElementById("inputFormContainer");
-        const icon = document.getElementById("formIcon");
         
         if (container.style.display === "block") {
             container.style.display = "none";
-            icon.innerText = "▼";
         } else {
             container.style.display = "block";
-            icon.innerText = "▲";
-            fetchNextSerialNumber(); 
+            fetchNextSerialNumber(); // ফর্ম ওপেন করার সময় লেটেস্ট সিরিয়াল নম্বর রিফ্রেশ করে নেবে
         }
     }
 
-    // 🎯 'Serial No' নাম ট্র্যাক করে লেটেস্ট নম্বর নিয়ে আসার মেকানিজম
+    // 🎯 'Serial No' কলামের লাস্ট ডাটা ট্র্যাক করে স্বয়ংক্রিয়ভাবে +১ করার মেকানিজম
     async function fetchNextSerialNumber() {
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data&t=${cacheBuster}`;
@@ -165,28 +161,30 @@
             const lines = csvText.split(/\r?\n/);
             
             let lastSl = 0;
-            // নিচ থেকে লুপ চালিয়ে 'Serial No' কলামের ভ্যালু খোঁজা
+            // নিচ থেকে লুপ চালিয়ে শেষ রো-এর প্রথম সেলের সিরিয়াল নম্বর বের করা
             for (let i = lines.length - 1; i > 0; i--) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 const row = cleanCSVCells(line);
-                
-                // ১ম কলাম (Column A) থেকে সিরিয়াল নম্বর রিড করা হচ্ছে
                 const slVal = parseInt(row[0]);
                 if (!isNaN(slVal)) {
                     lastSl = slVal;
                     break;
                 }
             }
+            // লাস্ট সিরিয়ালের সাথে ঠিক ১ যোগ করে বক্সে সেট করা
             document.getElementById("inSl").value = lastSl + 1;
         } catch (error) {
-            console.error("Failed to fetch next SL:", error);
+            console.error("Failed to fetch next Serial No:", error);
+            // কোন কারণে নেটওয়ার্ক ফেইল হলে যেন ফাঁকা না থাকে, তাই ব্যাকআপ হিসেবে ১০ বা ম্যানুয়াল এন্ট্রি অপশন রাখা
             if (!document.getElementById("inSl").value) {
-                document.getElementById("inSl").placeholder = "Enter Serial No (e.g. 15)";
+                document.getElementById("inSl").value = "";
+                document.getElementById("inSl").placeholder = "Enter Serial No Manually";
             }
         }
     }
 
+    // সিএসভি সেপারেশন পার্সার
     function cleanCSVCells(text) {
         let cells = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
@@ -199,6 +197,7 @@
         return cells;
     }
 
+    // ডাটা সার্চ মেকানিজম
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
         if (!queryRaw) { alert("Please enter Name or TIN!"); return; }
@@ -239,4 +238,86 @@
                 resultsList.style.display = "block";
                 resultsList.innerHTML = `<p>Multiple results found:</p>`;
                 matchedRows.forEach((row, index) => {
-                    resultsList.innerHTML += `
+                    resultsList.innerHTML += `<div class="result-item" onclick="showTaxpayerDetails(${index})"><strong>Serial No:</strong> ${row[0]} | <strong>Name:</strong> ${row[1]} | <strong>TIN:</strong> ${row[2]}</div>`;
+                });
+            }
+        } catch (error) { alert("Failed to fetch search data!"); } 
+        finally { loadingText.style.display = "none"; }
+    }
+
+    function showTaxpayerDetails(index) {
+        const row = matchedRows[index];
+        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
+        
+        document.getElementById("resSl").value = getVal(0);       
+        document.getElementById("resName").value = getVal(1);     
+        document.getElementById("resTin").value = getVal(2);      
+        document.getElementById("resMobile").value = getVal(3);   
+        document.getElementById("resPassword").value = getVal(4); 
+        document.getElementById("resZone").value = getVal(5);     
+        document.getElementById("resCircle").value = getVal(6);   
+        document.getElementById("resAddress").value = getVal(7);  
+        document.getElementById("resRef").value = getVal(8);      
+        document.getElementById("resLives").value = getVal(9);    
+        document.getElementById("resStatus").innerText = getVal(10); 
+        
+        document.getElementById("resultTable").style.display = "table";
+    }
+
+    // গুগল শিটে নতুন ডাটা সেভ করার মেকানিজম
+    async function insertToSheet(event) {
+        event.preventDefault();
+        
+        if(SCRIPT_URL.includes("xxxxxxxxx")) {
+            alert("দয়া করে কোডের ভেতর SCRIPT_URL এর জায়গায় আপনার Apps Script Web App লিংকটি বসান!");
+            return;
+        }
+
+        const submitBtn = document.getElementById("submitBtn");
+        const inputLoading = document.getElementById("inputLoading");
+        
+        submitBtn.disabled = true;
+        inputLoading.style.display = "block";
+
+        const payload = {
+            sl: document.getElementById("inSl").value,
+            name: document.getElementById("inName").value,
+            tin: document.getElementById("inTin").value,
+            mobile: document.getElementById("inMobile").value,
+            password: document.getElementById("inPassword").value,
+            zone: document.getElementById("inZone").value,
+            circle: document.getElementById("inCircle").value,
+            address: document.getElementById("inAddress").value,
+            ref: document.getElementById("inRef").value,
+            lives: document.getElementById("inLives").value,
+            status: document.getElementById("inStatus").value
+        };
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                cache: "no-cache",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            alert("Data submitted successfully! গুগল শিটের 'Data' ট্যাবে নতুন ডাটা সেভ হয়ে গেছে।");
+            document.getElementById("inputForm").reset();
+            
+            // ডাটা সেভ সাকসেসফুল হলে ফর্ম অটোমেটিক বন্ধ হয়ে যাবে এবং নেক্সট সিরিয়াল নম্বর প্রস্তুত করবে
+            toggleInputForm();
+            fetchNextSerialNumber();
+            
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Error saving data. Please try again.");
+        } finally {
+            submitBtn.disabled = false;
+            inputLoading.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
