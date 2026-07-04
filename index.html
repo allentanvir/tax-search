@@ -1,121 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAX Payment Database Search</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 30px; color: #555555; }
-        .container { max-width: 650px; margin: 0 auto; }
-        .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold; }
-        .section-title { font-size: 16px; color: #007bff; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
-        
-        /* 📥 নীল ব্যাকগ্রাউন্ডের কোলাপসিবল বাটন বার */
-        .collapsible-header { 
-            font-size: 16px; 
-            color: white; 
-            background-color: #007bff; 
-            margin-top: 30px; 
-            padding: 12px 15px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-        
-        /* 🎯 ছোট আপলোড আইকন (হুবহু ওইরকম ছোট সাইজ) */
-        .upload-icon {
-            width: 16px; 
-            height: 16px;
-            vertical-align: middle;
-            margin-right: 8px;
-            filter: brightness(0) invert(1); /* আইকন সাদা করার জন্য */
-        }
-        
-        .collapsible-icon { font-size: 14px; }
-        
-        .collapsible-content { 
-            display: none; 
-            border: 1px solid #007bff;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-            padding: 20px;
-            background-color: #fff;
-        }
-        
-        .search-row { display: flex; align-items: center; margin-bottom: 20px; }
-        .search-row label { width: 150px; font-size: 14px; color: #333333; font-weight: bold; }
-        .input-group { display: flex; flex: 1; gap: 10px; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; }
-        #inSl { background-color: #f8f9fa; font-weight: bold; color: #333; }
-        
-        .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-submit { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; }
-        .loading { display: none; font-size: 13px; color: #666; margin-bottom: 15px; font-style: italic; }
-        
-        .results-list { display: none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 20px; }
-        .result-item { padding: 10px 14px; background: #fff; border: 1px solid #eee; margin-bottom: 6px; cursor: pointer; border-radius: 4px; font-size: 13px; }
-        .result-item:hover { background: #e3f2fd; }
-        
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; }
-        td { padding: 6px 0; font-size: 14px; }
-        td.label-cell { width: 150px; font-weight: bold; }
-        .status-badge { display: inline-block; background-color: #17a2b8; color: white; padding: 5px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="page-title">TAX Payment Database (Data Sheet)</div>
-    
-    <div class="section-title">🔍 Search Database</div>
-    <div class="search-row">
-        <label>Search Taxpayer *</label>
-        <div class="input-group">
-            <input type="text" id="searchInput" placeholder="Enter Assessee Name or TIN...">
-            <button class="btn-search" onclick="searchFromSheet()">Search</button>
-        </div>
-    </div>
-
-    <div id="loadingText" class="loading">Searching database...</div>
-    <div id="resultsList" class="results-list"></div>
-
-    <table class="result-table" id="resultTable">
-        </table>
-
-    <div class="collapsible-header" onclick="toggleInputForm()">
-        <span>
-            <img src="https://cdn-icons-png.flaticon.com/512/126/126467.png" class="upload-icon" alt="Upload">
-            Input New Data (Save to Sheet)
-        </span>
-        <span id="formIcon">▼</span>
-    </div>
-    
-    <div id="inputFormContainer" class="collapsible-content">
-        <form id="inputForm" onsubmit="insertToSheet(event)">
-            <button type="submit" class="btn-submit" id="submitBtn">Save Data to Sheet</button>
-        </form>
-    </div>
+<div class="collapsible-header" onclick="toggleForm()">
+    <img src="https://cdn-icons-png.flaticon.com/512/126/126467.png" class="upload-icon">
 </div>
 
-<script>
-    // আপনার জাভাস্ক্রিপ্ট লজিক এখানে থাকবে...
-    function toggleInputForm() {
-        const container = document.getElementById("inputFormContainer");
-        const icon = document.getElementById("formIcon");
-        if (container.style.display === "block") {
-            container.style.display = "none";
-            icon.innerText = "▼";
-        } else {
-            container.style.display = "block";
-            icon.innerText = "▲";
-        }
+<style>
+    .collapsible-header { 
+        background-color: #007bff; 
+        padding: 10px; 
+        cursor: pointer; 
+        border-radius: 4px;
+        display: inline-flex; /* বাটন ছোট রাখার জন্য */
+        align-items: center;
+        justify-content: center;
     }
-    // অন্যান্য ফাংশনগুলো আগের মতো সচল রাখুন...
-</script>
-
-</body>
-</html>
+    .upload-icon { 
+        width: 16px; 
+        height: 16px; 
+        filter: brightness(0) invert(1); 
+    }
+</style>
