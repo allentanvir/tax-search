@@ -5,149 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAX Payment Database Search</title>
     <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 30px;
-            color: #555555;
-        }
-        .container {
-            max-width: 650px;
-            margin: 0 auto;
-        }
-        .page-title {
-            font-size: 20px;
-            color: #5c768d;
-            font-weight: normal;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 8px;
-            margin-bottom: 25px;
-        }
-        .search-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .search-row label {
-            width: 150px;
-            font-size: 14px;
-            color: #333333;
-            font-weight: bold;
-        }
-        .search-row label span {
-            color: red;
-        }
-        .input-group {
-            display: flex;
-            flex: 1;
-            gap: 10px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1px solid #cccccc;
-            border-radius: 4px;
-            font-size: 14px;
-            outline: none;
-            color: #333;
-        }
-        input[type="text"]:focus {
-            border-color: #3b82f6;
-        }
-        .btn-search {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-search:hover {
-            background-color: #0069d9;
-        }
-        .loading {
-            display: none;
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
-
-        /* একাধিক রেজাল্ট দেখার বক্সের স্টাইল */
-        .results-list {
-            display: none;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-        .results-list p {
-            margin: 0 0 8px 0;
-            font-weight: bold;
-            color: #333;
-            font-size: 14px;
-        }
-        .result-item {
-            padding: 8px 12px;
-            background: #fff;
-            border: 1px solid #eee;
-            margin-bottom: 5px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-        .result-item:hover {
-            background: #e3f2fd;
-            border-color: #bbdefb;
-        }
-
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            display: none;
-        }
-        .result-table td {
-            padding: 8px 0;
-            vertical-align: middle;
-            font-size: 14px;
-        }
-        .result-table td.label-cell {
-            width: 150px;
-            color: #333333;
-            font-weight: bold;
-        }
-        .result-table td.value-cell {
-            padding-left: 10px;
-        }
-        .result-table input, .result-table textarea {
-            width: 100%;
-            padding: 7px 10px;
-            border: 1px solid #cccccc;
-            border-radius: 4px;
-            background-color: #f8f9fa;
-            color: #333333;
-            font-size: 14px;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-            resize: none;
-            outline: none;
-        }
-        .status-badge {
-            display: inline-block;
-            background-color: #17a2b8;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: bold;
-        }
+        body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 30px; color: #555555; }
+        .container { max-width: 650px; margin: 0 auto; }
+        .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; }
+        .search-row { display: flex; align-items: center; margin-bottom: 20px; }
+        .search-row label { width: 150px; font-size: 14px; color: #333333; font-weight: bold; }
+        .input-group { display: flex; flex: 1; gap: 10px; }
+        input[type="text"] { width: 100%; padding: 7px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; outline: none; }
+        .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .loading { display: none; font-size: 13px; color: #666; margin-bottom: 15px; font-style: italic; }
+        .results-list { display: none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin-bottom: 20px; }
+        .results-list p { margin: 0 0 8px 0; font-weight: bold; color: #333; font-size: 14px; }
+        .result-item { padding: 8px 12px; background: #fff; border: 1px solid #eee; margin-bottom: 5px; cursor: pointer; border-radius: 4px; font-size: 13px; }
+        .result-item:hover { background: #e3f2fd; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; }
+        .result-table td { padding: 8px 0; font-size: 14px; }
+        .result-table td.label-cell { width: 150px; color: #333333; font-weight: bold; }
+        .result-table input, .result-table textarea { width: 100%; padding: 7px 10px; border: 1px solid #cccccc; border-radius: 4px; background-color: #f8f9fa; color: #333333; font-size: 14px; box-sizing: border-box; resize: none; outline: none; }
+        .status-badge { display: inline-block; background-color: #17a2b8; color: white; padding: 5px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -156,71 +31,33 @@
     <div class="page-title">TAX Payment Database</div>
     
     <div class="search-row">
-        <label>Search Taxpayer <span>*</span></label>
+        <label>Search Taxpayer *</label>
         <div class="input-group">
             <input type="text" id="searchInput" placeholder="Enter Name or TIN...">
-            <button class="btn-search" onclick="searchFromSheet()">
-                <svg width="14" height="14" fill="white" viewBox="0 0 16 16">
-                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                </svg>
-            </button>
+            <button class="btn-search" onclick="searchFromSheet()">Search</button>
         </div>
     </div>
 
     <div id="loadingText" class="loading">Searching database...</div>
-
     <div id="resultsList" class="results-list"></div>
 
     <table class="result-table" id="resultTable">
-        <tr>
-            <td class="label-cell">SL.</td>
-            <td class="value-cell"><input type="text" id="resSl" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Assessee Name</td>
-            <td class="value-cell"><input type="text" id="resName" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Tin</td>
-            <td class="value-cell"><input type="text" id="resTin" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Mobail No</td>
-            <td class="value-cell"><input type="text" id="resMobile" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Password</td>
-            <td class="value-cell"><input type="text" id="resPassword" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Zone</td>
-            <td class="value-cell"><input type="text" id="resZone" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Circle</td>
-            <td class="value-cell"><input type="text" id="resCircle" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Address</td>
-            <td class="value-cell"><textarea id="resAddress" rows="2" readonly></textarea></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Ref</td>
-            <td class="value-cell"><input type="text" id="resRef" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Lives</td>
-            <td class="value-cell"><input type="text" id="resLives" readonly></td>
-        </tr>
-        <tr>
-            <td class="label-cell">Work Status</td>
-            <td class="value-cell"><span id="resStatus" class="status-badge"></span></td>
-        </tr>
+        <tr><td class="label-cell">SL.</td><td><input type="text" id="resSl" readonly></td></tr>
+        <tr><td class="label-cell">Assessee Name</td><td><input type="text" id="resName" readonly></td></tr>
+        <tr><td class="label-cell">Tin</td><td><input type="text" id="resTin" readonly></td></tr>
+        <tr><td class="label-cell">Mobail No</td><td><input type="text" id="resMobile" readonly></td></tr>
+        <tr><td class="label-cell">Password</td><td><input type="text" id="resPassword" readonly></td></tr>
+        <tr><td class="label-cell">Zone</td><td><input type="text" id="resZone" readonly></td></tr>
+        <tr><td class="label-cell">Circle</td><td><input type="text" id="resCircle" readonly></td></tr>
+        <tr><td class="label-cell">Address</td><td><textarea id="resAddress" rows="2" readonly></textarea></td></tr>
+        <tr><td class="label-cell">Ref</td><td><input type="text" id="resRef" readonly></td></tr>
+        <tr><td class="label-cell">Lives</td><td><input type="text" id="resLives" readonly></td></tr>
+        <tr><td class="label-cell">Work Status</td><td><span id="resStatus" class="status-badge"></span></td></tr>
     </table>
 </div>
 
 <script>
-    let matchedRows = []; // ম্যাচ করা সব ডেটা রাখার অ্যারে
+    let matchedRows = [];
 
     async function searchFromSheet() {
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
@@ -245,16 +82,13 @@
         try {
             const response = await fetch(url);
             const csvText = await response.text();
-            
             const lines = csvText.split(/\r?\n/);
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কমা সেপারেটেড ডেটা নিখুঁতভাবে রিড করার রেগুলার এক্সপ্রেশন
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-
                 if (row.length < 4) continue;
 
                 const nameInSheet = row[2] ? row[2].toLowerCase().trim() : ''; 
@@ -268,10 +102,8 @@
             if (matchedRows.length === 0) {
                 alert("Sorry, no data found for this Name or TIN!");
             } else if (matchedRows.length === 1) {
-                // ১ জন পাওয়া গেলে সরাসরি ডিটেইলস চলে আসবে
                 showTaxpayerDetails(0);
             } else {
-                // একাধিক ব্যক্তি পাওয়া গেলে এখানে তালিকা দেখাবে
                 resultsList.style.display = "block";
                 resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
                 
@@ -283,13 +115,10 @@
                     const item = document.createElement("div");
                     item.className = "result-item";
                     item.innerHTML = `<strong>${name}</strong> — TIN: ${tin} (Circle: ${circle})`;
-                    item.onclick = function() {
-                        showTaxpayerDetails(index);
-                    };
+                    item.onclick = function() { showTaxpayerDetails(index); };
                     resultsList.appendChild(item);
                 });
             }
-
         } catch (error) {
             console.error("Error:", error);
             alert("Failed to load database data!");
@@ -298,11 +127,9 @@
         }
     }
 
-    // বক্সে ডেটা শো করার ফাংশন
     function showTaxpayerDetails(index) {
         const row = matchedRows[index];
         const resultTable = document.getElementById("resultTable");
-        
         const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
 
         document.getElementById("resSl").value = getVal(1);         
@@ -313,4 +140,17 @@
         document.getElementById("resZone").value = getVal(6);       
         document.getElementById("resCircle").value = getVal(7);     
         document.getElementById("resAddress").value = getVal(8);    
-        document
+        document.getElementById("resRef").value = getVal(9);        
+        document.getElementById("resLives").value = getVal(10);     
+        
+        if (row[11] !== undefined) {
+            document.getElementById("resStatus").innerText = row[11].trim(); 
+        } else {
+            document.getElementById("resStatus").innerText = 'N/A';
+        }
+        resultTable.style.display = "table";
+    }
+</script>
+
+</body>
+</html>
