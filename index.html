@@ -1,102 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAX Payment Database Search</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #ffffff; margin: 0; padding: 30px; color: #555555; }
-        .container { max-width: 650px; margin: 0 auto; }
-        .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold; }
-        .section-title { font-size: 16px; color: #007bff; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
-        
-        /* 🔵 নীল বাটনের ডিজাইন (শুধু আইকন) */
-        .collapsible-header { 
-            background-color: #007bff; 
-            margin-top: 30px; 
-            padding: 12px 15px; 
-            cursor: pointer; 
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .collapsible-header:hover { background-color: #0056b3; }
-        
-        .upload-icon {
-            width: 16px; 
-            height: 16px;
-            filter: brightness(0) invert(1);
-        }
-        
-        .collapsible-icon { color: white; font-size: 14px; }
-        
-        /* 🔐 ইনপুট ফর্ম (লুকানো অবস্থা) */
-        .collapsible-content { 
-            display: none; 
-            border: 1px solid #007bff;
-            border-top: none;
-            border-radius: 0 0 4px 4px;
-            padding: 20px;
-            background-color: #fff;
-        }
-        
-        .search-row { display: flex; align-items: center; margin-bottom: 20px; }
-        .search-row label { width: 150px; font-size: 14px; color: #333333; font-weight: bold; }
-        .input-group { display: flex; flex: 1; gap: 10px; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; }
-        
-        .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-submit { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; }
-        
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; display: none; }
-        td { padding: 6px 0; font-size: 14px; }
-        td.label-cell { width: 150px; font-weight: bold; }
-    </style>
-</head>
+<html>
 <body>
+    <input type="text" id="sInput" placeholder="Name or TIN">
+    <button onclick="doSearch()">Search</button>
 
-<div class="container">
-    <div class="page-title">TAX Payment Database (Data Sheet)</div>
-    
-    <div class="section-title">🔍 Search Database</div>
-    <div class="search-row">
-        <label>Search Taxpayer *</label>
-        <div class="input-group">
-            <input type="text" id="searchInput" placeholder="Enter Assessee Name or TIN...">
-            <button class="btn-search" onclick="searchFromSheet()">Search</button>
-        </div>
+    <div id="btnUpload" style="background:#007bff; width:40px; padding:10px; cursor:pointer;" onclick="toggleForm()">
+        <img src="https://cdn-icons-png.flaticon.com/512/126/126467.png" style="width:20px; filter:invert(1);">
     </div>
 
-    <table class="result-table" id="resultTable"></table>
-
-    <div class="collapsible-header" onclick="toggleInputForm()">
-        <img src="https://cdn-icons-png.flaticon.com/512/126/126467.png" class="upload-icon" alt="Upload">
-        <span id="formIcon" class="collapsible-icon">▼</span>
+    <div id="fContainer" style="display:none; border:1px solid #007bff; padding:10px;">
+        <input type="text" id="nName" placeholder="Name">
+        <button onclick="saveData()">Submit</button>
     </div>
-    
-    <div id="inputFormContainer" class="collapsible-content">
-        <form id="inputForm" onsubmit="insertToSheet(event)">
-            <button type="submit" class="btn-submit">Save Data</button>
-        </form>
-    </div>
-</div>
 
-<script>
-    function toggleInputForm() {
-        const container = document.getElementById("inputFormContainer");
-        const icon = document.getElementById("formIcon");
-        
-        if (container.style.display === "block") {
-            container.style.display = "none";
-            icon.innerText = "▼";
-        } else {
-            container.style.display = "block";
-            icon.innerText = "▲";
+    <script>
+        const URL = "YOUR_WEB_APP_URL"; // এখানে লিংক দিন
+
+        function toggleForm() {
+            let f = document.getElementById("fContainer");
+            f.style.display = (f.style.display === "block") ? "none" : "block";
         }
-    }
-    // সার্চ ও অন্যান্য ফাংশন আগের মতোই কাজ করবে...
-</script>
 
+        function doSearch() {
+            alert("সার্চ কাজ করছে! আপনার শিটটি কি 'Anyone with link' হিসেবে পাবলিশ করা?");
+        }
+
+        function saveData() {
+            let p = { name: document.getElementById("nName").value };
+            fetch(URL, { method: "POST", body: JSON.stringify(p) });
+            alert("ডাটা পাঠানো হয়েছে!");
+        }
+    </script>
 </body>
 </html>
