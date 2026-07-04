@@ -78,7 +78,6 @@
     <button onclick="searchFromSheet()">Search</button>
     <div id="loadingText" class="loading">গুগল শিট থেকে তথ্য খোঁজা হচ্ছে...</div>
 
-    <!-- রেজাল্ট দেখানোর বক্স (আপনার শিটের সাথে মিলিয়ে সাজানো) -->
     <div class="result-box" id="resultBox">
         <div class="info-row"><strong>Assessee Name:</strong> <span id="resName"></span></div>
         <div class="info-row"><strong>TIN:</strong> <span id="resTin"></span></div>
@@ -95,6 +94,7 @@
 </div>
 
 <script>
+    // সরাসরি গুগল শিট এক্সপোর্ট ইউআরএল
     const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv`;
 
     async function searchFromSheet() {
@@ -114,27 +114,28 @@
             const response = await fetch(url);
             const csvText = await response.text();
             
-            const rows = csvText.split("\n").map(row => {
-                return row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-            });
-
+            // নিখুঁতভাবে CSV ডাটা পার্স করার লজিক
+            const lines = csvText.split("\n");
             let dataFound = false;
 
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                if (row.length < 2) continue; 
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
 
-                // আপনার শিটের কলাম পজিশন এখন ফিক্সড:
-                // কলাম A (index 0) = Assessee Name
-                // কলাম B (index 1) = TIN
-                const nameInSheet = row[0] ? row[0].toLowerCase() : ''; 
-                const tinInSheet = row[1] ? row[1].toLowerCase() : '';   
+                // কোটেশন মার্কসহ কমা আলাদা করার উন্নত নিয়ম
+                const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
+                if (row.length < 2) continue;
+
+                // কলাম ইনডেক্স নির্ধারণ
+                const nameInSheet = row[0] ? row[0].toLowerCase().trim() : ''; 
+                const tinInSheet = row[1] ? row[1].toLowerCase().trim() : '';   
+
+                // 'includes' ব্যবহার করা হয়েছে যাতে আংশিক নাম লিখলেও খুঁজে পায়
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    // কলাম ইনডেক্স ১ ঘর করে এগিয়ে দেওয়া হলো
                     document.getElementById("resName").innerText = getVal(0);
                     document.getElementById("resTin").innerText = getVal(1);
                     document.getElementById("resMobile").innerText = getVal(2);
@@ -159,7 +160,7 @@
 
         } catch (error) {
             console.error("Error:", error);
-            alert("ডাটা লোড করতে সমস্যা হয়েছে!");
+            alert("ডাটা লোড করতে সমস্যা হয়েছে! ইন্টারনেট কানেকশন বা শিটের শেয়ারিং সেটিং চেক করুন।");
         } finally {
             loadingText.style.display = "none";
         }
