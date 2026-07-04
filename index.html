@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAX Payment Database Search</title>
     <style>
-        /* image_76a909.png এবং image_76fff4.png এর ফন্ট ও প্রফেশনাল কালার স্কিম */
         body {
             font-family: Arial, Helvetica, sans-serif;
             background-color: #ffffff;
@@ -45,7 +44,7 @@
             gap: 10px;
         }
         input[type="text"] {
-            flex: 1;
+            width: 100%;
             padding: 7px 10px;
             border: 1px solid #cccccc;
             border-radius: 4px;
@@ -78,7 +77,6 @@
             font-style: italic;
         }
 
-        /* প্রফেশনাল ডাটা টেবিল স্টাইল */
         .result-table {
             width: 100%;
             border-collapse: collapse;
@@ -103,7 +101,7 @@
             padding: 7px 10px;
             border: 1px solid #cccccc;
             border-radius: 4px;
-            background-color: #f8f9fa; /* হালকা অফ-হোয়াইট লকড ইনপুট */
+            background-color: #f8f9fa;
             color: #333333;
             font-size: 14px;
             box-sizing: border-box;
@@ -141,7 +139,6 @@
 
     <div id="loadingText" class="loading">Searching database...</div>
 
-    <!-- সুবিন্যস্ত ডাটা টেবিল -->
     <table class="result-table" id="resultTable">
         <tr>
             <td class="label-cell">SL.</td>
@@ -210,39 +207,39 @@
             const response = await fetch(url);
             const csvText = await response.text();
             
-            // নতুন উন্নত লাইন পার্সিং লজিক
-            const lines = csvText.split("\n");
+            // লাইন ব্রেক হ্যান্ডেল করার জন্য উন্নত রেগুলার এক্সপ্রেশন (\r\n বা \n দুটোই কেটে দেবে)
+            const lines = csvText.split(/\r?\n/);
             let dataFound = false;
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // কমার সাথে কোটেশন হ্যান্ডেল করার স্ট্যান্ডার্ড রেগুলার এক্সপ্রেশন
+                // নিখুঁতভাবে অ্যাড্রেসের ভেতরের কমা হ্যান্ডেল করার চমৎকার লজিক
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
                 if (row.length < 3) continue;
 
-                // image_76fff4.png অনুযায়ী একদম সঠিক ইনডেক্স ম্যাপিং
-                const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; // Column B
-                const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   // Column C
+                const nameInSheet = row[1] ? row[1].toLowerCase().trim() : ''; 
+                const tinInSheet = row[2] ? row[2].toLowerCase().trim() : '';   
 
-                // আংশিক নাম বা টিন মিললেই ডাটা লোড হবে
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
                     
                     const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
 
-                    document.getElementById("resSl").value = getVal(0);       // Column A
-                    document.getElementById("resName").value = getVal(1);     // Column B
-                    document.getElementById("resTin").value = getVal(2);      // Column C
-                    document.getElementById("resMobile").value = getVal(3);   // Column D
-                    document.getElementById("resPassword").value = getVal(4); // Column E
-                    document.getElementById("resZone").value = getVal(5);     // Column F
-                    document.getElementById("resCircle").value = getVal(6);   // Column G
-                    document.getElementById("resAddress").value = getVal(7);  // Column H
-                    document.getElementById("resRef").value = getVal(8);     // Column I
-                    document.getElementById("resLives").value = getVal(9);    // Column J
-                    document.getElementById("resStatus").innerText = getVal(10); // Column K (Work Status)
+                    document.getElementById("resSl").value = getVal(0);       
+                    document.getElementById("resName").value = getVal(1);     
+                    document.getElementById("resTin").value = getVal(2);      
+                    document.getElementById("resMobile").value = getVal(3);   
+                    document.getElementById("resPassword").value = getVal(4); 
+                    document.getElementById("resZone").value = getVal(5);     
+                    document.getElementById("resCircle").value = getVal(6);   
+                    document.getElementById("resAddress").value = getVal(7);  
+                    document.getElementById("resRef").value = getVal(8);     
+                    document.getElementById("resLives").value = getVal(9);    
+                    
+                    // Work Status কলামের অদৃশ্য স্পেস/ক্যারেক্টার ট্রিম করা হলো
+                    document.getElementById("resStatus").innerText = getVal(10).trim(); 
 
                     resultTable.style.display = "table";
                     dataFound = true;
