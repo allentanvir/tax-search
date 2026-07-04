@@ -3,44 +3,26 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        .res-box { background: #fff; padding: 15px; border-left: 6px solid #007bff; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        h4 { margin-top: 0; color: #333; }
+        .search-box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
+        .result-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 8px solid #007bff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .row { display: flex; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .label { font-weight: bold; color: #555; width: 40%; }
+        .value { color: #000; width: 60%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="box">
-        <h3>🔍 TAX Database</h3>
-        <input type="text" id="s" placeholder="Search by Name, TIN or Mobile...">
-        <button class="btn" style="background: #007bff;" onclick="search()">Search Record</button>
+    <div class="search-box">
+        <h3 style="margin-top:0;">TAX Information Search</h3>
+        <input type="text" id="s" placeholder="Enter Name or TIN...">
+        <button class="btn" onclick="search()">Search Now</button>
     </div>
-
     <div id="res"></div>
-
-    <div class="box">
-        <button class="btn" style="background: #28a745;" onclick="document.getElementById('form').style.display='block'">+ Add New Record</button>
-    </div>
-
-    <div id="form" class="box" style="display:none;">
-        <h4>Enter New Data</h4>
-        <input type="text" id="n" placeholder="Assessee Name">
-        <input type="text" id="t" placeholder="TIN">
-        <input type="text" id="m" placeholder="Mobile No">
-        <input type="text" id="p" placeholder="Password">
-        <input type="text" id="z" placeholder="Zone">
-        <input type="text" id="c" placeholder="Circle">
-        <input type="text" id="a" placeholder="Address">
-        <input type="text" id="r" placeholder="Ref">
-        <input type="text" id="l" placeholder="Lives">
-        <input type="text" id="w" placeholder="Work Status">
-        <button class="btn" style="background: #28a745;" onclick="save()">Submit & Save</button>
-    </div>
 </div>
 
 <script>
@@ -48,25 +30,28 @@
     
     function search() {
         let q = document.getElementById("s").value.toLowerCase();
+        document.getElementById("res").innerHTML = "Searching...";
         fetch(URL + "?q=" + q).then(res => res.json()).then(data => {
             let html = "";
-            data.filter(r => r.some(c => String(c).toLowerCase().includes(q))).forEach(r => {
-                html += `<div class='res-box'>
-                    <p><b>Serial:</b> ${r[0]} | <b>Name:</b> ${r[1]}<br>
-                    <b>TIN:</b> ${r[2]} | <b>Mobile:</b> ${r[3]}<br>
-                    <b>Password:</b> ${r[4]}<br>
-                    <b>Address:</b> ${r[7]}<br>
-                    <b>Zone:</b> ${r[5]} | <b>Circle:</b> ${r[6]}<br>
-                    <b>Ref:</b> ${r[8]} | <b>Lives:</b> ${r[9]} | <b>Work:</b> ${r[10]}</p>
+            let filtered = data.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
+            
+            filtered.forEach(r => {
+                html += `<div class='result-card'>
+                    <div class='row'><span class='label'>Serial:</span><span class='value'>${r[0]}</span></div>
+                    <div class='row'><span class='label'>Name:</span><span class='value'>${r[1]}</span></div>
+                    <div class='row'><span class='label'>TIN:</span><span class='value'>${r[2]}</span></div>
+                    <div class='row'><span class='label'>Mobile:</span><span class='value'>${r[3]}</span></div>
+                    <div class='row'><span class='label'>Password:</span><span class='value'>${r[4]}</span></div>
+                    <div class='row'><span class='label'>Zone:</span><span class='value'>${r[5]}</span></div>
+                    <div class='row'><span class='label'>Circle:</span><span class='value'>${r[6]}</span></div>
+                    <div class='row'><span class='label'>Address:</span><span class='value'>${r[7]}</span></div>
+                    <div class='row'><span class='label'>Ref:</span><span class='value'>${r[8]}</span></div>
+                    <div class='row'><span class='label'>Lives:</span><span class='value'>${r[9]}</span></div>
+                    <div class='row'><span class='label'>Status:</span><span class='value'>${r[10]}</span></div>
                 </div>`;
             });
-            document.getElementById("res").innerHTML = html || "<p style='text-align:center;'>No matching data found.</p>";
+            document.getElementById("res").innerHTML = html || "No record found.";
         });
-    }
-
-    function save() {
-        let d = { name: document.getElementById('n').value, tin: document.getElementById('t').value, mobile: document.getElementById('m').value, password: document.getElementById('p').value, zone: document.getElementById('z').value, circle: document.getElementById('c').value, address: document.getElementById('a').value, ref: document.getElementById('r').value, lives: document.getElementById('l').value, work: document.getElementById('w').value };
-        fetch(URL, {method: "POST", body: JSON.stringify(d)}).then(() => { alert("Saved Successfully!"); location.reload(); });
     }
 </script>
 </body>
