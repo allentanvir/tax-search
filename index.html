@@ -15,7 +15,6 @@
         .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .loading { display: none; font-size: 13px; color: #666; margin-bottom: 15px; font-style: italic; }
         
-        /* নতুন মাল্টিপল রেজাল্ট তালিকার উন্নত স্টাইল */
         .results-list { display: none; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 20px; }
         .results-list p { margin: 0 0 10px 0; font-weight: bold; color: #333; font-size: 14px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
         .result-item { padding: 10px 14px; background: #fff; border: 1px solid #eee; margin-bottom: 6px; cursor: pointer; border-radius: 4px; font-size: 13px; line-height: 1.5; }
@@ -66,7 +65,7 @@
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
         const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
-        const MathResultsList = document.getElementById("resultsList");
+        const resultsList = document.getElementById("resultsList");
 
         if (!query) {
             alert("Please enter Name or TIN!");
@@ -75,8 +74,8 @@
 
         loadingText.style.display = "block";
         resultTable.style.display = "none";
-        MathResultsList.style.display = "none";
-        MathResultsList.innerHTML = "";
+        resultsList.style.display = "none";
+        resultsList.innerHTML = "";
         matchedRows = [];
 
         const cacheBuster = new Date().getTime();
@@ -107,11 +106,10 @@
             } else if (matchedRows.length === 1) {
                 showTaxpayerDetails(0);
             } else {
-                MathResultsList.style.display = "block";
-                MathResultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
+                resultsList.style.display = "block";
+                resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
                 
                 matchedRows.forEach((row, index) => {
-                    // আপনার রিকোয়েস্ট অনুযায়ী ডাটা ম্যাপিং (SL, Name, TIN, Mobile, Ref)
                     const sl = row[1] || 'N/A';
                     const name = row[2] || 'N/A';
                     const tin = row[3] || 'N/A';
@@ -120,46 +118,4 @@
                     
                     const item = document.createElement("div");
                     item.className = "result-item";
-                    
-                    // আপনার পছন্দের কলামগুলো ১ লাইনে সেট করা হলো
-                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin} | <strong>Mobile:</strong> ${mobile} | <strong>Ref:</strong> ${ref}`;
-                    
-                    item.onclick = function() { showTaxpayerDetails(index); };
-                    MathResultsList.appendChild(item);
-                });
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("Failed to load database data!");
-        } finally {
-            loadingText.style.display = "none";
-        }
-    }
-
-    function showTaxpayerDetails(index) {
-        const row = matchedRows[index];
-        const resultTable = document.getElementById("resultTable");
-        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
-
-        document.getElementById("resSl").value = getVal(1);         
-        document.getElementById("resName").value = getVal(2);       
-        document.getElementById("resTin").value = getVal(3);        
-        document.getElementById("resMobile").value = getVal(4);     
-        document.getElementById("resPassword").value = getVal(5);   
-        document.getElementById("resZone").value = getVal(6);       
-        document.getElementById("resCircle").value = getVal(7);     
-        document.getElementById("resAddress").value = getVal(8);    
-        document.getElementById("resRef").value = getVal(9);        
-        document.getElementById("resLives").value = getVal(10);     
-        
-        if (row[11] !== undefined) {
-            document.getElementById("resStatus").innerText = row[11].trim(); 
-        } else {
-            document.getElementById("resStatus").innerText = 'N/A';
-        }
-        resultTable.style.display = "table";
-    }
-</script>
-
-</body>
-</html>
+                    item.innerHTML = `<strong>SL:</strong> ${sl} | <strong>Name:</strong> ${name} | <strong>TIN:</strong> ${tin} | <strong>Mobile:</strong> ${mobile}
