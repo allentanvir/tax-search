@@ -3,53 +3,42 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; padding: 20px; }
+        body { font-family: sans-serif; padding: 15px; }
         .container { max-width: 500px; margin: auto; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; font-weight: bold; border-radius: 5px; }
-        .btn-search { background: #007bff; }
-        .btn-save { background: #28a745; margin-top: 10px; }
-        #inputForm { display: none; padding: 15px; border: 1px solid #ccc; margin-top: 10px; border-radius: 5px; }
-        .toggle-btn { background: #0056b3; color: white; padding: 10px; text-align: center; cursor: pointer; margin-top: 20px; border-radius: 5px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; border-radius: 4px; margin-top: 10px; }
+        #inputForm { display: none; padding: 15px; border: 1px solid #ddd; margin-top: 10px; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h3>TAX Payment Database</h3>
+    <h3>TAX Database</h3>
     <input type="text" id="searchInput" placeholder="Search Name or TIN...">
-    <button class="btn btn-search" onclick="searchData()">Search</button>
-    <div id="resultArea" style="margin-top:15px; padding:10px; background:#f9f9f9;"></div>
+    <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
+    <div id="resultArea" style="margin-top:10px;"></div>
 
-    <div class="toggle-btn" onclick="toggleForm()">&#10133; Add New Data</div>
+    <button class="btn" style="background:#0056b3;" onclick="document.getElementById('inputForm').style.display='block'">+ Add New Data</button>
 
     <div id="inputForm">
-        <input type="text" id="name" placeholder="Assessee Name">
+        <input type="text" id="name" placeholder="Name">
         <input type="text" id="tin" placeholder="TIN">
         <input type="text" id="mobile" placeholder="Mobile">
         <input type="text" id="zone" placeholder="Zone">
         <input type="text" id="circle" placeholder="Circle">
         <input type="text" id="address" placeholder="Address">
-        <button class="btn btn-save" onclick="saveData()">Save Data</button>
+        <input type="text" id="status" placeholder="Status">
+        <input type="text" id="reference" placeholder="Reference">
+        <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
     </div>
 </div>
 
 <script>
-    // আপনার লিংকটি এখানে সফলভাবে বসানো হয়েছে
-    const SCRIPT_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnRZILnxnol3ZfhsXdt3NrIxLD9TYEPJSa5F4XxwkpK7wWfmrETvLNkY7ZPGGmL8WUVWmFm0f2liYFSsSrlq1sJ_4KsSnc0oS2BeXHhrrCSdaPeoQAWcbXXWNzWqg-OWk73wbobcc-M5HMk3eurDP8VQAhglmGyAZFcYPNQvhSq5zDsYtyd-kVf5K8JIF_pDjQsm403FmXrOPWZ14Ktb23J6Kc7H7ELT6o5NwPWhQyuFKWMC7QE1vhnHHgxlG0D61MwshJ_x8r17aRz_WwDypC8mHp5xng&lib=MjK7f8y5EZVNMoHY67kcIzwOHd-IMoZnG";
-
-    function toggleForm() {
-        var f = document.getElementById("inputForm");
-        f.style.display = (f.style.display === "block") ? "none" : "block";
-    }
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
     function searchData() {
-        var res = document.getElementById("resultArea");
-        res.innerText = "Searching...";
         fetch(SCRIPT_URL + "?q=" + document.getElementById("searchInput").value)
             .then(res => res.json())
-            .then(data => res.innerText = JSON.stringify(data))
-            .catch(() => res.innerText = "Error! Check URL or Permission.");
+            .then(data => document.getElementById("resultArea").innerText = JSON.stringify(data));
     }
 
     function saveData() {
@@ -59,7 +48,9 @@
             mobile: document.getElementById("mobile").value,
             zone: document.getElementById("zone").value,
             circle: document.getElementById("circle").value,
-            address: document.getElementById("address").value
+            address: document.getElementById("address").value,
+            status: document.getElementById("status").value,
+            reference: document.getElementById("reference").value
         };
         fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(data)})
             .then(() => alert("Saved Successfully!"));
