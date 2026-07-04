@@ -5,11 +5,11 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
-        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .res-card { background: white; padding: 15px; border-left: 6px solid #27ae60; margin-bottom: 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .row { display: flex; padding: 4px 0; border-bottom: 1px solid #f9f9f9; }
+        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .res-card { background: white; padding: 15px; border-left: 6px solid #27ae60; margin-top: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .row { display: flex; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
         .lbl { font-weight: bold; width: 40%; color: #555; }
         .val { width: 60%; color: #000; }
     </style>
@@ -19,9 +19,8 @@
 <div class="container">
     <div class="box">
         <h3>TAX Search</h3>
-        <input type="text" id="sName" placeholder="Search by Assessee Name...">
-        <input type="text" id="sTin" placeholder="Search by TIN Number...">
-        <button class="btn" onclick="search()">Search Now</button>
+        <input type="text" id="s" placeholder="Search by Name OR TIN...">
+        <button class="btn" onclick="search()">Search</button>
     </div>
     <div id="res"></div>
 </div>
@@ -30,16 +29,16 @@
     const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
     
     function search() {
-        let n = document.getElementById("sName").value.trim().toLowerCase();
-        let t = document.getElementById("sTin").value.trim().toLowerCase();
+        let q = document.getElementById("s").value.trim().toLowerCase();
+        if(!q) return;
         
         document.getElementById("res").innerHTML = "Searching...";
         
-        fetch(URL + "?q=" + encodeURIComponent(n || t)).then(res => res.json()).then(data => {
+        fetch(URL + "?q=" + encodeURIComponent(q)).then(res => res.json()).then(data => {
             let filtered = data.filter(r => {
-                let nameMatch = n && String(r[1]).toLowerCase().includes(n);
-                let tinMatch = t && String(r[2]).toLowerCase().includes(t);
-                return nameMatch || tinMatch;
+                let nameInSheet = String(r[1]).toLowerCase(); // Name Column
+                let tinInSheet = String(r[2]).toLowerCase();  // TIN Column
+                return nameInSheet.includes(q) || tinInSheet.includes(q);
             });
             
             if(filtered.length === 0) {
@@ -50,6 +49,7 @@
             let html = "";
             filtered.forEach(r => {
                 html += `<div class='res-card'>
+                    <div class='row'><span class='lbl'>Serial:</span><span class='val'>${r[0]}</span></div>
                     <div class='row'><span class='lbl'>Name:</span><span class='val'>${r[1]}</span></div>
                     <div class='row'><span class='lbl'>TIN:</span><span class='val'>${r[2]}</span></div>
                     <div class='row'><span class='lbl'>Mobile:</span><span class='val'>${r[3]}</span></div>
