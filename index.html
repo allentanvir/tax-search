@@ -61,6 +61,20 @@
 <script>
     let matchedRows = [];
 
+    // সিএসভি লাইনের ভেতরের কমা এবং কোটেশন নিখুঁতভাবে আলাদা করার অ্যাডভান্সড ফাংশন
+    function parseCSVLine(text) {
+        let p = '', r = [];
+        let q = false;
+        for (let i = 0; i < text.length; i++) {
+            let c = text[i];
+            if (c === '"') { q = !q; }
+            else if (c === ',' && !q) { r.push(p.trim()); p = ''; }
+            else { p += c; }
+        }
+        r.push(p.trim());
+        return r.map(x => x.replace(/^"|"$/g, '').trim());
+    }
+
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
         const queryCleaned = queryRaw.replace(/[\s.]+/g, ''); 
@@ -97,7 +111,8 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+                // নতুন এবং শক্তিশালী পার্সার ব্যবহার করা হলো
+                const row = parseCSVLine(line);
                 if (row.length < 4) continue;
 
                 const nameInSheetRaw = row[2] ? row[2].toLowerCase().trim() : ''; 
