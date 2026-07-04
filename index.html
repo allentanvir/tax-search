@@ -207,7 +207,6 @@
             const response = await fetch(url);
             const csvText = await response.text();
             
-            // লাইন ব্রেক হ্যান্ডেল করার জন্য উন্নত রেগুলার এক্সপ্রেশন (\r\n বা \n দুটোই কেটে দেবে)
             const lines = csvText.split(/\r?\n/);
             let dataFound = false;
 
@@ -215,7 +214,6 @@
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // নিখুঁতভাবে অ্যাড্রেসের ভেতরের কমা হ্যান্ডেল করার চমৎকার লজিক
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
                 if (row.length < 3) continue;
@@ -237,8 +235,6 @@
                     document.getElementById("resAddress").value = getVal(7);  
                     document.getElementById("resRef").value = getVal(8);     
                     document.getElementById("resLives").value = getVal(9);    
-                    
-                    // Work Status কলামের অদৃশ্য স্পেস/ক্যারেক্টার ট্রিম করা হলো
                     document.getElementById("resStatus").innerText = getVal(10).trim(); 
 
                     resultTable.style.display = "table";
