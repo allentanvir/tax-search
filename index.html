@@ -1,69 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; border-radius: 4px; margin-top: 10px; }
-        #inputForm { display: none; padding: 15px; border: 1px solid #ddd; margin-top: 10px; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h3>TAX Database</h3>
-    <input type="text" id="searchInput" placeholder="Search Name or TIN...">
-    <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
-    <div id="resultArea" style="margin-top:15px; background:#f9f9f9; padding:10px;"></div>
-
-    <button class="btn" style="background:#0056b3;" onclick="document.getElementById('inputForm').style.display='block'">+ Add New Data</button>
-
-    <div id="inputForm">
-        <input type="text" id="name" placeholder="Name">
-        <input type="text" id="tin" placeholder="TIN">
-        <input type="text" id="mobile" placeholder="Mobile">
-        <input type="text" id="zone" placeholder="Zone">
-        <input type="text" id="circle" placeholder="Circle">
-        <input type="text" id="address" placeholder="Address">
-        <input type="text" id="status" placeholder="Status">
-        <input type="text" id="reference" placeholder="Reference">
-        <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
-    </div>
-</div>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
-
-    function searchData() {
+function searchData() {
         var res = document.getElementById("resultArea");
         res.innerHTML = "Searching...";
-        fetch(SCRIPT_URL + "?q=" + document.getElementById("searchInput").value)
+        var query = document.getElementById("searchInput").value;
+        
+        fetch(SCRIPT_URL + "?q=" + query)
             .then(res => res.json())
             .then(data => {
-                if(data.length > 0) {
-                    res.innerHTML = "Found: " + JSON.stringify(data);
-                } else {
+                if(data.length === 0) {
                     res.innerHTML = "No results found.";
+                } else {
+                    // ডাটা সুন্দর করে টেবিল আকারে সাজানোর কোড
+                    let html = "<div style='overflow-x:auto;'><table border='1' style='width:100%; border-collapse:collapse; font-size:12px;'>";
+                    data.forEach(row => {
+                        html += "<tr>";
+                        row.forEach(cell => {
+                            html += "<td style='padding:5px;'>" + (cell || "") + "</td>";
+                        });
+                        html += "</tr>";
+                    });
+                    html += "</table></div>";
+                    res.innerHTML = html;
                 }
             })
             .catch(() => res.innerHTML = "Error! Check URL.");
     }
-
-    function saveData() {
-        var data = {
-            name: document.getElementById("name").value,
-            tin: document.getElementById("tin").value,
-            mobile: document.getElementById("mobile").value,
-            zone: document.getElementById("zone").value,
-            circle: document.getElementById("circle").value,
-            address: document.getElementById("address").value,
-            status: document.getElementById("status").value,
-            reference: document.getElementById("reference").value
-        };
-        fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(data)})
-            .then(() => alert("Saved Successfully!"));
-    }
-</script>
-</body>
-</html>
