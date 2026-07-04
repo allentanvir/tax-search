@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <input type="text" id="searchInput" placeholder="Search...">
+    <button onclick="searchData()">Search</button>
+    <div id="resultArea"></div>
+
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
@@ -7,29 +14,27 @@
         var query = document.getElementById("searchInput").value;
         
         fetch(SCRIPT_URL + "?q=" + encodeURIComponent(query))
-            .then(res => res.json())
-            .then(data => {
-                if(data.length === 0) {
-                    res.innerHTML = "No results found.";
-                } else {
-                    // সুন্দর টেবিল তৈরির কোড
-                    let html = "<div style='overflow-x:auto;'><table border='1' style='width:100%; border-collapse:collapse; font-size:12px;'>";
-                    data.forEach(row => {
-                        html += "<tr>";
-                        row.forEach(cell => {
-                            html += "<td style='padding:5px; border:1px solid #ccc;'>" + (cell || "") + "</td>";
-                        });
-                        html += "</tr>";
+        .then(response => response.json())
+        .then(data => {
+            if(data.length === 0) {
+                res.innerHTML = "No results found.";
+            } else {
+                let html = "<table border='1'>";
+                data.forEach(row => {
+                    html += "<tr>";
+                    row.forEach(cell => {
+                        html += "<td>" + cell + "</td>";
                     });
-                    html += "</table></div>";
-                    res.innerHTML = html;
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                res.innerHTML = "Error! Please try again.";
-            });
+                    html += "</tr>";
+                });
+                html += "</table>";
+                res.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            res.innerHTML = "Error! Check URL.";
+        });
     }
-
-    // saveData ফাংশনটি এখানে থাকবে...
 </script>
+</body>
+</html>
