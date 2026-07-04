@@ -3,71 +3,70 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; padding: 15px; background: #f4f4f4; }
-        .box { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; color: white; border-radius: 4px; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 15px; }
+        .container { max-width: 600px; margin: auto; }
+        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; color: white; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .res-box { background: #fff; padding: 15px; border-left: 6px solid #007bff; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h4 { margin-top: 0; color: #333; }
     </style>
 </head>
 <body>
 
+<div class="container">
     <div class="box">
-        <h3>TAX Database Search</h3>
-        <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
-        <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
+        <h3>🔍 TAX Database</h3>
+        <input type="text" id="s" placeholder="Search by Name, TIN or Mobile...">
+        <button class="btn" style="background: #007bff;" onclick="search()">Search Record</button>
     </div>
 
-    <div id="resultArea"></div>
+    <div id="res"></div>
 
     <div class="box">
-        <button class="btn" style="background:#28a745;" onclick="document.getElementById('addForm').style.display='block'">+ Add New Data</button>
+        <button class="btn" style="background: #28a745;" onclick="document.getElementById('form').style.display='block'">+ Add New Record</button>
     </div>
 
-    <div id="addForm" class="box" style="display:none;">
-        <h4>Add New Information</h4>
-        <input type="text" id="name" placeholder="Assessee Name">
-        <input type="text" id="tin" placeholder="TIN">
-        <input type="text" id="mobile" placeholder="Mobile No">
-        <input type="text" id="password" placeholder="Password">
-        <input type="text" id="zone" placeholder="Zone">
-        <input type="text" id="circle" placeholder="Circle">
-        <input type="text" id="address" placeholder="Address">
-        <input type="text" id="ref" placeholder="Ref">
-        <input type="text" id="lives" placeholder="Lives">
-        <input type="text" id="work" placeholder="Work Status">
-        <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
+    <div id="form" class="box" style="display:none;">
+        <h4>Enter New Data</h4>
+        <input type="text" id="n" placeholder="Assessee Name">
+        <input type="text" id="t" placeholder="TIN">
+        <input type="text" id="m" placeholder="Mobile No">
+        <input type="text" id="p" placeholder="Password">
+        <input type="text" id="z" placeholder="Zone">
+        <input type="text" id="c" placeholder="Circle">
+        <input type="text" id="a" placeholder="Address">
+        <input type="text" id="r" placeholder="Ref">
+        <input type="text" id="l" placeholder="Lives">
+        <input type="text" id="w" placeholder="Work Status">
+        <button class="btn" style="background: #28a745;" onclick="save()">Submit & Save</button>
     </div>
+</div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
-
-    function searchData() {
-        let q = document.getElementById("searchInput").value.toLowerCase();
-        fetch(SCRIPT_URL + "?q=" + q).then(res => res.json()).then(data => {
-            let res = data.filter(row => row.some(c => String(c).toLowerCase().includes(q)));
-            let html = "<div class='box'><strong>Results:</strong><br>";
-            res.forEach(row => {
-                html += `<p><b>Name:</b> ${row[1]}<br><b>TIN:</b> ${row[2]}<br><b>Password:</b> ${row[4]}<br><b>Address:</b> ${row[7]}<br><b>Status:</b> ${row[10]}</p><hr>`;
+    const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+    
+    function search() {
+        let q = document.getElementById("s").value.toLowerCase();
+        fetch(URL + "?q=" + q).then(res => res.json()).then(data => {
+            let html = "";
+            data.filter(r => r.some(c => String(c).toLowerCase().includes(q))).forEach(r => {
+                html += `<div class='res-box'>
+                    <p><b>Serial:</b> ${r[0]} | <b>Name:</b> ${r[1]}<br>
+                    <b>TIN:</b> ${r[2]} | <b>Mobile:</b> ${r[3]}<br>
+                    <b>Password:</b> ${r[4]}<br>
+                    <b>Address:</b> ${r[7]}<br>
+                    <b>Zone:</b> ${r[5]} | <b>Circle:</b> ${r[6]}<br>
+                    <b>Ref:</b> ${r[8]} | <b>Lives:</b> ${r[9]} | <b>Work:</b> ${r[10]}</p>
+                </div>`;
             });
-            document.getElementById("resultArea").innerHTML = html + "</div>";
+            document.getElementById("res").innerHTML = html || "<p style='text-align:center;'>No matching data found.</p>";
         });
     }
 
-    function saveData() {
-        let payload = {
-            name: document.getElementById("name").value,
-            tin: document.getElementById("tin").value,
-            mobile: document.getElementById("mobile").value,
-            password: document.getElementById("password").value,
-            zone: document.getElementById("zone").value,
-            circle: document.getElementById("circle").value,
-            address: document.getElementById("address").value,
-            ref: document.getElementById("ref").value,
-            lives: document.getElementById("lives").value,
-            work: document.getElementById("work").value
-        };
-        fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(payload)})
-            .then(() => { alert("Saved Successfully!"); location.reload(); });
+    function save() {
+        let d = { name: document.getElementById('n').value, tin: document.getElementById('t').value, mobile: document.getElementById('m').value, password: document.getElementById('p').value, zone: document.getElementById('z').value, circle: document.getElementById('c').value, address: document.getElementById('a').value, ref: document.getElementById('r').value, lives: document.getElementById('l').value, work: document.getElementById('w').value };
+        fetch(URL, {method: "POST", body: JSON.stringify(d)}).then(() => { alert("Saved Successfully!"); location.reload(); });
     }
 </script>
 </body>
