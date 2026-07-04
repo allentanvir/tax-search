@@ -77,6 +77,36 @@
             font-style: italic;
         }
 
+        /* একাধিক রেজাল্ট দেখার বক্সের স্টাইল */
+        .results-list {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .results-list p {
+            margin: 0 0 8px 0;
+            font-weight: bold;
+            color: #333;
+            font-size: 14px;
+        }
+        .result-item {
+            padding: 8px 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .result-item:hover {
+            background: #e3f2fd;
+            border-color: #bbdefb;
+        }
+
         .result-table {
             width: 100%;
             border-collapse: collapse;
@@ -139,6 +169,8 @@
 
     <div id="loadingText" class="loading">Searching database...</div>
 
+    <div id="resultsList" class="results-list"></div>
+
     <table class="result-table" id="resultTable">
         <tr>
             <td class="label-cell">SL.</td>
@@ -188,10 +220,13 @@
 </div>
 
 <script>
+    let matchedRows = []; // ম্যাচ করা সব ডেটা রাখার অ্যারে
+
     async function searchFromSheet() {
         const query = document.getElementById("searchInput").value.toLowerCase().trim();
         const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
+        const resultsList = document.getElementById("resultsList");
 
         if (!query) {
             alert("Please enter Name or TIN!");
@@ -200,6 +235,9 @@
 
         loadingText.style.display = "block";
         resultTable.style.display = "none";
+        resultsList.style.display = "none";
+        resultsList.innerHTML = "";
+        matchedRows = [];
 
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/export?format=csv&t=${cacheBuster}`;
@@ -209,51 +247,47 @@
             const csvText = await response.text();
             
             const lines = csvText.split(/\r?\n/);
-            let dataFound = false;
 
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
 
-                // অ্যাড্রেসের ভেতরের কমাকে হ্যান্ডেল করার রেগুলার এক্সপ্রেশন
+                // কমা সেপারেটেড ডেটা নিখুঁতভাবে রিড করার রেগুলার এক্সপ্রেশন
                 const row = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
 
                 if (row.length < 4) continue;
 
-                // ⚠️ এক্সপোর্টে কলাম এলোমেলো হওয়া ঠেকাতে ১ ঘর করে ডানে শিফট করা হলো (ম্যাপিং ফিক্স)
                 const nameInSheet = row[2] ? row[2].toLowerCase().trim() : ''; 
                 const tinInSheet = row[3] ? row[3].toLowerCase().trim() : '';   
 
                 if (nameInSheet.includes(query) || tinInSheet.includes(query)) {
-                    
-                    const getVal = (index) => (row[index] !== undefined && row[index] !== '') ? row[index] : 'N/A';
-
-                    // শিটের আউটপুট ডেটা পজিশন অনুযায়ী বক্সেস সাজানো হলো
-                    document.getElementById("resSl").value = getVal(1);         // Serial No (Row 1)
-                    document.getElementById("resName").value = getVal(2);       // Assessee Name (Row 2)
-                    document.getElementById("resTin").value = getVal(3);        // Tin (Row 3)
-                    document.getElementById("resMobile").value = getVal(4);     // Mobail No (Row 4)
-                    document.getElementById("resPassword").value = getVal(5);   // Password (Row 5)
-                    document.getElementById("resZone").value = getVal(6);       // Zone (Row 6)
-                    document.getElementById("resCircle").value = getVal(7);     // Circle (Row 7)
-                    document.getElementById("resAddress").value = getVal(8);    // Address (Row 8)
-                    document.getElementById("resRef").value = getVal(9);        // Ref (Row 9)
-                    document.getElementById("resLives").value = getVal(10);     // Lives (Row 10)
-                    
-                    if (row[11] !== undefined) {
-                        document.getElementById("resStatus").innerText = row[11].trim(); // Work Status (Row 11)
-                    } else {
-                        document.getElementById("resStatus").innerText = 'N/A';
-                    }
-
-                    resultTable.style.display = "table";
-                    dataFound = true;
-                    break; 
+                    matchedRows.push(row);
                 }
             }
 
-            if (!dataFound) {
+            if (matchedRows.length === 0) {
                 alert("Sorry, no data found for this Name or TIN!");
+            } else if (matchedRows.length === 1) {
+                // ১ জন পাওয়া গেলে সরাসরি ডিটেইলস চলে আসবে
+                showTaxpayerDetails(0);
+            } else {
+                // একাধিক ব্যক্তি পাওয়া গেলে এখানে তালিকা দেখাবে
+                resultsList.style.display = "block";
+                resultsList.innerHTML = `<p>Multiple (${matchedRows.length}) taxpayers found. Please choose one:</p>`;
+                
+                matchedRows.forEach((row, index) => {
+                    const name = row[2] || 'N/A';
+                    const tin = row[3] || 'N/A';
+                    const circle = row[7] || 'N/A';
+                    
+                    const item = document.createElement("div");
+                    item.className = "result-item";
+                    item.innerHTML = `<strong>${name}</strong> — TIN: ${tin} (Circle: ${circle})`;
+                    item.onclick = function() {
+                        showTaxpayerDetails(index);
+                    };
+                    resultsList.appendChild(item);
+                });
             }
 
         } catch (error) {
@@ -263,7 +297,20 @@
             loadingText.style.display = "none";
         }
     }
-</script>
 
-</body>
-</html>
+    // বক্সে ডেটা শো করার ফাংশন
+    function showTaxpayerDetails(index) {
+        const row = matchedRows[index];
+        const resultTable = document.getElementById("resultTable");
+        
+        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
+
+        document.getElementById("resSl").value = getVal(1);         
+        document.getElementById("resName").value = getVal(2);       
+        document.getElementById("resTin").value = getVal(3);        
+        document.getElementById("resMobile").value = getVal(4);     
+        document.getElementById("resPassword").value = getVal(5);   
+        document.getElementById("resZone").value = getVal(6);       
+        document.getElementById("resCircle").value = getVal(7);     
+        document.getElementById("resAddress").value = getVal(8);    
+        document
