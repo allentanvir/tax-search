@@ -10,7 +10,6 @@
         .page-title { font-size: 20px; color: #5c768d; border-bottom: 2px solid #ddd; padding-bottom: 8px; margin-bottom: 25px; font-weight: bold; }
         .section-title { font-size: 16px; color: #007bff; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; font-weight: bold; }
         
-        /* 📜 কোলাপসিবল হেডার স্টাইল */
         .collapsible-header { 
             font-size: 16px; 
             color: white; 
@@ -30,7 +29,6 @@
         .collapsible-header:hover { background-color: #0056b3; }
         .collapsible-icon { font-size: 14px; transition: transform 0.3s; }
         
-        /* 🔐 ইনপুট কন্টেইনার (ডিফল্ট হাইড থাকবে) */
         .collapsible-content { 
             display: none; 
             overflow: hidden; 
@@ -46,8 +44,7 @@
         .input-group { display: flex; flex: 1; gap: 10px; }
         input[type="text"], textarea, select { width: 100%; padding: 8px 10px; border: 1px solid #cccccc; border-radius: 4px; font-size: 14px; outline: none; box-sizing: border-box; }
         
-        /* অটো সিরিয়াল বক্সের জন্য হালকা গ্রে ব্যাকগ্রাউন্ড */
-        input[readonly] { background-color: #f8f9fa; color: #666; cursor: not-allowed; }
+        #inSl { background-color: #f8f9fa; font-weight: bold; color: #333; }
         
         .btn-search { background-color: #007bff; color: white; border: none; padding: 6px 18px; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-submit { background-color: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; font-size: 15px; }
@@ -107,7 +104,7 @@
             <table class="input-table">
                 <tr>
                     <td class="label-cell">Serial No *</td>
-                    <td><input type="text" id="inSl" readonly placeholder="Loading next SL..."></td>
+                    <td><input type="text" id="inSl" required placeholder="Auto calculating..."></td>
                 </tr>
                 <tr><td class="label-cell">Assessee Name *</td><td><input type="text" id="inName" required></td></tr>
                 <tr><td class="label-cell">Tin *</td><td><input type="text" id="inTin" required></td></tr>
@@ -138,12 +135,10 @@
 
     let matchedRows = [];
 
-    // পেজ লোড হলেই ব্যাকগ্রাউন্ডে অটোমেটিক লাস্ট সিরিয়াল নম্বর নিয়ে আসার জন্য কল হবে
-    window.onload = function() {
+    window.addEventListener('DOMContentLoaded', () => {
         fetchNextSerialNumber();
-    };
+    });
 
-    // 📥 ফর্ম ওপেন/ক্লোজ করার লজিক
     function toggleInputForm() {
         const container = document.getElementById("inputFormContainer");
         const icon = document.getElementById("formIcon");
@@ -154,42 +149,44 @@
         } else {
             container.style.display = "block";
             icon.innerText = "▲";
-            // ফর্ম খোলার সময় লেটেস্ট সিরিয়াল নম্বরটি আরেকবার আপডেট করে নেবে
-            fetchNextSerialNumber();
+            fetchNextSerialNumber(); 
         }
     }
 
-    // 🎯 গুগল শিট থেকে অটোমেটিক লাস্ট সিরিয়াল বের করে +১ করার মেকানিজম
+    // 🎯 'Serial No' নাম ট্র্যাক করে লেটেস্ট নম্বর নিয়ে আসার মেকানিজম
     async function fetchNextSerialNumber() {
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data&t=${cacheBuster}`;
         
         try {
             const response = await fetch(url);
+            if (!response.ok) throw new Error("Network error");
             const csvText = await response.text();
             const lines = csvText.split(/\r?\n/);
             
             let lastSl = 0;
-            // নিচ থেকে লুপ চালিয়ে শেষ সিরিয়াল নম্বরটি খোঁজা হচ্ছে
+            // নিচ থেকে লুপ চালিয়ে 'Serial No' কলামের ভ্যালু খোঁজা
             for (let i = lines.length - 1; i > 0; i--) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 const row = cleanCSVCells(line);
+                
+                // ১ম কলাম (Column A) থেকে সিরিয়াল নম্বর রিড করা হচ্ছে
                 const slVal = parseInt(row[0]);
                 if (!isNaN(slVal)) {
                     lastSl = slVal;
                     break;
                 }
             }
-            // লাস্ট সিরিয়ালের সাথে ১ যোগ করে বক্সে সেট করা হচ্ছে
             document.getElementById("inSl").value = lastSl + 1;
         } catch (error) {
-            console.error("Error fetching serial number:", error);
-            document.getElementById("inSl").placeholder = "Failed to auto-load SL";
+            console.error("Failed to fetch next SL:", error);
+            if (!document.getElementById("inSl").value) {
+                document.getElementById("inSl").placeholder = "Enter Serial No (e.g. 15)";
+            }
         }
     }
 
-    // সিএসভি পার্সার
     function cleanCSVCells(text) {
         let cells = []; let current = ''; let inQuotes = false;
         for (let i = 0; i < text.length; i++) {
@@ -202,7 +199,6 @@
         return cells;
     }
 
-    // সার্চ মেকানিজম
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
         if (!queryRaw) { alert("Please enter Name or TIN!"); return; }
@@ -243,86 +239,4 @@
                 resultsList.style.display = "block";
                 resultsList.innerHTML = `<p>Multiple results found:</p>`;
                 matchedRows.forEach((row, index) => {
-                    resultsList.innerHTML += `<div class="result-item" onclick="showTaxpayerDetails(${index})"><strong>SL:</strong> ${row[0]} | <strong>Name:</strong> ${row[1]} | <strong>TIN:</strong> ${row[2]}</div>`;
-                });
-            }
-        } catch (error) { alert("Failed to fetch search data!"); } 
-        finally { loadingText.style.display = "none"; }
-    }
-
-    function showTaxpayerDetails(index) {
-        const row = matchedRows[index];
-        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
-        
-        document.getElementById("resSl").value = getVal(0);       
-        document.getElementById("resName").value = getVal(1);     
-        document.getElementById("resTin").value = getVal(2);      
-        document.getElementById("resMobile").value = getVal(3);   
-        document.getElementById("resPassword").value = getVal(4); 
-        document.getElementById("resZone").value = getVal(5);     
-        document.getElementById("resCircle").value = getVal(6);   
-        document.getElementById("resAddress").value = getVal(7);  
-        document.getElementById("resRef").value = getVal(8);      
-        document.getElementById("resLives").value = getVal(9);    
-        document.getElementById("resStatus").innerText = getVal(10); 
-        
-        document.getElementById("resultTable").style.display = "table";
-    }
-
-    // ডাটা ইনপুট মেকানিজম
-    async function insertToSheet(event) {
-        event.preventDefault();
-        
-        if(SCRIPT_URL.includes("xxxxxxxxx")) {
-            alert("দয়া করে কোডের ভেতর SCRIPT_URL এর জায়গায় আপনার Apps Script Web App লিংকটি বসান!");
-            return;
-        }
-
-        const submitBtn = document.getElementById("submitBtn");
-        const inputLoading = document.getElementById("inputLoading");
-        
-        submitBtn.disabled = true;
-        inputLoading.style.display = "block";
-
-        const payload = {
-            sl: document.getElementById("inSl").value,
-            name: document.getElementById("inName").value,
-            tin: document.getElementById("inTin").value,
-            mobile: document.getElementById("inMobile").value,
-            password: document.getElementById("inPassword").value,
-            zone: document.getElementById("inZone").value,
-            circle: document.getElementById("inCircle").value,
-            address: document.getElementById("inAddress").value,
-            ref: document.getElementById("inRef").value,
-            lives: document.getElementById("inLives").value,
-            status: document.getElementById("inStatus").value
-        };
-
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                cache: "no-cache",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            alert("Data submitted successfully! গুগল শিটের 'Data' ট্যাবে ডাটা সেভ হয়ে গেছে।");
-            document.getElementById("inputForm").reset();
-            
-            // ডাটা সেভ হয়ে যাওয়ার পর অটোমেটিক ফর্মটি বন্ধ হয়ে যাবে এবং পরবর্তী সিরিয়াল নম্বর লোড করে রাখবে
-            toggleInputForm();
-            fetchNextSerialNumber();
-            
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Error saving data. Please try again.");
-        } finally {
-            submitBtn.disabled = false;
-            inputLoading.style.display = "none";
-        }
-    }
-</script>
-
-</body>
-</html>
+                    resultsList.innerHTML += `
