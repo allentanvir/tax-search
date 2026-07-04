@@ -3,69 +3,61 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; padding: 15px; }
-        .input-group { margin-bottom: 10px; }
-        input { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
-        .btn { padding: 10px 20px; cursor: pointer; color: white; border: none; }
-        #addForm { display: none; margin-top: 20px; border: 1px solid #ddd; padding: 15px; background: #f9f9f9; }
+        body { font-family: Arial; padding: 20px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        .btn { width: 100%; padding: 10px; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        #addForm { display: none; padding: 15px; border: 1px solid #ccc; margin-top: 10px; }
     </style>
 </head>
 <body>
+    <h3>TAX Database</h3>
+    <input type="text" id="searchInput" placeholder="TIN দিয়ে সার্চ করুন...">
+    <button class="btn" style="background:#007bff;" onclick="searchData()">Search</button>
 
-    <h3>TAX Payment</h3>
-    <div class="input-group">
-        <label>TIN*</label>
-        <div style="display:flex;">
-            <input type="text" id="tinSearch" placeholder="Enter TIN to search...">
-            <button class="btn" style="background:#007bff;" onclick="searchByTIN()">🔍</button>
-        </div>
-    </div>
+    <div id="resultArea" style="margin-top:15px; border:1px solid #eee; padding:10px;"></div>
 
-    <div id="resultArea"></div>
-
-    <button onclick="document.getElementById('addForm').style.display='block'" style="font-size:24px; cursor:pointer;">➕</button>
+    <button class="btn" style="background:#28a745;" onclick="document.getElementById('addForm').style.display='block'">➕ নতুন ডাটা যোগ করুন</button>
 
     <div id="addForm">
-        <h4>Add New Data</h4>
         <input type="text" id="name" placeholder="Name">
         <input type="text" id="tin" placeholder="TIN">
+        <input type="text" id="mobile" placeholder="Mobile">
+        <input type="text" id="zone" placeholder="Zone">
+        <input type="text" id="circle" placeholder="Circle">
         <input type="text" id="address" placeholder="Address">
-        <input type="text" id="zone" placeholder="Taxes Zone">
-        <input type="text" id="circle" placeholder="Taxes Circle">
-        <input type="text" id="account" placeholder="Account Code">
-        <button class="btn" style="background:#28a745; margin-top:10px;" onclick="saveData()">Save Data</button>
-        <button class="btn" style="background:#dc3545;" onclick="this.parentElement.style.display='none'">Close</button>
+        <input type="text" id="status" placeholder="Status">
+        <input type="text" id="reference" placeholder="Reference">
+        <button class="btn" style="background:#28a745;" onclick="saveData()">Save Data</button>
+        <button class="btn" style="background:#666;" onclick="document.getElementById('addForm').style.display='none'">Cancel</button>
     </div>
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
-    function searchByTIN() {
-        let tin = document.getElementById("tinSearch").value;
-        fetch(SCRIPT_URL + "?q=" + tin)
-            .then(res => res.json())
-            .then(data => {
-                let found = data.find(row => row[2] == tin); // ধরে নিচ্ছি TIN ৩য় কলামে
-                if(found) {
-                    document.getElementById("resultArea").innerHTML = 
-                    `<p>Name: ${found[1]}</p><p>Address: ${found[6]}</p><p>Zone: ${found[4]}</p>`;
-                } else {
-                    alert("No Data Found!");
-                }
+    function searchData() {
+        var query = document.getElementById("searchInput").value;
+        fetch(SCRIPT_URL + "?q=" + query).then(res => res.json()).then(data => {
+            let html = "<table border='1' width='100%'>";
+            data.forEach(row => {
+                html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
             });
+            document.getElementById("resultArea").innerHTML = html + "</table>";
+        });
     }
 
     function saveData() {
-        let data = {
+        let payload = {
             name: document.getElementById("name").value,
             tin: document.getElementById("tin").value,
-            address: document.getElementById("address").value,
+            mobile: document.getElementById("mobile").value,
             zone: document.getElementById("zone").value,
             circle: document.getElementById("circle").value,
-            account: document.getElementById("account").value
+            address: document.getElementById("address").value,
+            status: document.getElementById("status").value,
+            reference: document.getElementById("reference").value
         };
-        fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(data)})
-            .then(() => alert("Saved Successfully!"));
+        fetch(SCRIPT_URL, {method: "POST", body: JSON.stringify(payload)})
+            .then(() => alert("ডাটা সেভ হয়েছে!"));
     }
 </script>
 </body>
