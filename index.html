@@ -25,16 +25,15 @@
             justify-content: space-between;
             align-items: center;
             user-select: none;
-            transition: background 0.2s;
         }
         .collapsible-header:hover { background-color: #0056b3; }
         
-        /* 🎯 আইকন ছোট করার স্পেশাল স্টাইল */
+        /* 🎯 আইকন একদম ছোট (১২ পিক্সেল) করার জন্য স্পেশাল সিএসএস */
         .upload-icon {
-            font-size: 12px; /* আইকনটি লেখার চেয়ে ছোট করার জন্য */
-            margin-right: 5px;
+            font-size: 12px !important; 
             display: inline-block;
             vertical-align: middle;
+            margin-right: 5px;
         }
         
         .collapsible-icon { font-size: 14px; }
@@ -151,6 +150,7 @@
         fetchNextSerialNumber();
     });
 
+    // 📥 ক্লিক করলে ফর্ম ওপেন এবং ক্লোজ করার ১০০% ওয়ার্কিং ফাংশন
     function toggleInputForm() {
         const container = document.getElementById("inputFormContainer");
         const icon = document.getElementById("formIcon");
@@ -165,6 +165,7 @@
         }
     }
 
+    // 🎯 লেটেস্ট সিরিয়াল নম্বর সিঙ্ক করার মেকানিজম
     async function fetchNextSerialNumber() {
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data&t=${cacheBuster}`;
@@ -204,118 +205,22 @@
         return cells;
     }
 
+    // সার্চ মেকানিজম
     async function searchFromSheet() {
         const queryRaw = document.getElementById("searchInput").value.toLowerCase().trim();
         if (!queryRaw) { alert("Please enter Name or TIN!"); return; }
 
         const resultTable = document.getElementById("resultTable");
         const loadingText = document.getElementById("loadingText");
-        const resultsList = document.getElementById("resultsList");
+        const NavResultsList = document.getElementById("resultsList");
 
         loadingText.style.display = "block";
         resultTable.style.display = "none";
-        resultsList.style.display = "none";
-        resultsList.innerHTML = "";
+        NavResultsList.style.display = "none";
+        NavResultsList.innerHTML = "";
         matchedRows = [];
 
         const cacheBuster = new Date().getTime();
         const url = `https://docs.google.com/spreadsheets/d/14lpXHBMspZrdAAMQlTYuezE74gM2HK6z6kskLwqWvdU/gviz/tq?tqx=out:csv&sheet=Data&t=${cacheBuster}`;
 
-        try {
-            const response = await fetch(url);
-            const csvText = await response.text();
-            const lines = csvText.split(/\r?\n/);
-
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim(); if (!line) continue;
-                const row = cleanCSVCells(line); if (row.length < 2) continue;
-
-                const assesseeName = (row[1] || '').toLowerCase(); 
-                const tinNumber = (row[2] || '').toLowerCase();    
-
-                if (assesseeName.includes(queryRaw) || tinNumber.includes(queryRaw)) {
-                    matchedRows.push(row);
-                }
-            }
-
-            if (matchedRows.length === 0) { alert("Sorry, no data found matching that Assessee Name or TIN!"); } 
-            else if (matchedRows.length === 1) { showTaxpayerDetails(0); } 
-            else {
-                resultsList.style.display = "block";
-                resultsList.innerHTML = `<p>Multiple results found:</p>`;
-                matchedRows.forEach((row, index) => {
-                    resultsList.innerHTML += `<div class="result-item" onclick="showTaxpayerDetails(${index})"><strong>Serial No:</strong> ${row[0]} | <strong>Name:</strong> ${row[1]} | <strong>TIN:</strong> ${row[2]}</div>`;
-                });
-            }
-        } catch (error) { alert("Failed to fetch search data!"); } 
-        finally { loadingText.style.display = "none"; }
-    }
-
-    function showTaxpayerDetails(index) {
-        const row = matchedRows[index];
-        const getVal = (idx) => (row[idx] !== undefined && row[idx] !== '') ? row[idx] : 'N/A';
-        
-        document.getElementById("resSl").value = getVal(0);       
-        document.getElementById("resName").value = getVal(1);     
-        document.getElementById("resTin").value = getVal(2);      
-        document.getElementById("resMobile").value = getVal(3);   
-        document.getElementById("resPassword").value = getVal(4); 
-        document.getElementById("resZone").value = getVal(5);     
-        document.getElementById("resCircle").value = getVal(6);   
-        document.getElementById("resAddress").value = getVal(7);  
-        document.getElementById("resRef").value = getVal(8);      
-        document.getElementById("resLives").value = getVal(9);    
-        document.getElementById("resStatus").innerText = getVal(10); 
-        
-        document.getElementById("resultTable").style.display = "table";
-    }
-
-    async function insertToSheet(event) {
-        event.preventDefault();
-        
-        if(SCRIPT_URL.includes("xxxxxxxxx")) {
-            alert("দয়া করে কোডের ভেতর SCRIPT_URL এর জায়গায় আপনার Apps Script Web App লিংকটি বসান!");
-            return;
-        }
-
-        const submitBtn = document.getElementById("submitBtn");
-        const inputLoading = document.getElementById("inputLoading");
-        
-        submitBtn.disabled = true;
-        inputLoading.style.display = "block";
-
-        const payload = {
-            sl: document.getElementById("inSl").value,
-            name: document.getElementById("inName").value,
-            tin: document.getElementById("inTin").value,
-            mobile: document.getElementById("inMobile").value,
-            password: document.getElementById("inPassword").value,
-            zone: document.getElementById("inZone").value,
-            circle: document.getElementById("inCircle").value,
-            address: document.getElementById("inAddress").value,
-            ref: document.getElementById("inRef").value,
-            lives: document.getElementById("inLives").value,
-            status: document.getElementById("inStatus").value
-        };
-
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                cache: "no-cache",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-
-            alert("Data submitted successfully! গুগল শিটের 'Data' ট্যাবে ডাটা সেভ হয়ে গেছে।");
-            document.getElementById("inputForm").reset();
-            
-            toggleInputForm(); 
-            fetchNextSerialNumber();
-            
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Error saving data. Please try again.");
-        } finally {
-            submitBtn.disabled = false;
-            inputLoading.style.display = "none";
+        try
