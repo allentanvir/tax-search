@@ -1,34 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-</head>
 <body>
-    <h3>TAX Database</h3>
-    <input type="text" id="searchInput" placeholder="Search...">
-    <button onclick="getData()">Search</button>
-    <div id="resultArea" style="margin-top:20px;"></div>
+    <input type="text" id="s" placeholder="Search...">
+    <button onclick="f()">Search</button>
+    <div id="r"></div>
 
 <script>
-    // আপনার দেওয়া এই লিংকটি হুবহু এখানে বসানো হলো
+    // আপনার লিংকটি নিচে বসানো আছে
     const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
 
-    function getData() {
-        let resDiv = document.getElementById("resultArea");
-        let query = document.getElementById("searchInput").value;
-        resDiv.innerHTML = "Searching...";
-
-        fetch(URL + "?q=" + encodeURIComponent(query))
-            .then(response => response.json())
-            .then(data => {
-                let html = "<table border='1'>";
-                data.forEach(row => {
-                    html += "<tr><td>" + row.join("</td><td>") + "</td></tr>";
-                });
-                html += "</table>";
-                resDiv.innerHTML = html;
-            })
-            .catch(err => resDiv.innerHTML = "Error! Check URL.");
+    function f() {
+        document.getElementById("r").innerHTML = "Searching...";
+        fetch(URL).then(res => res.json()).then(data => {
+            let q = document.getElementById("s").value.toLowerCase();
+            let res = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(q)));
+            let html = "<table border='1'>";
+            res.forEach(row => { html += "<tr><td>" + row.join("</td><td>") + "</td></tr>"; });
+            document.getElementById("r").innerHTML = html + "</table>";
+        });
     }
 </script>
 </body>
