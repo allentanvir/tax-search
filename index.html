@@ -2,58 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAX Database</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
+        body { font-family: Arial, sans-serif; padding: 30px; color: #555; }
         .container { max-width: 600px; margin: auto; }
-        /* নীল বাটন স্টাইল */
-        .collapsible-header { background: #007bff; color: white; padding: 15px; cursor: pointer; text-align: center; border-radius: 4px; }
-        /* আপলোড আইকন (এন্ড্রয়েড স্টাইল) */
+        
+        /* নীল বাটন: শুধু আইকন */
+        .collapsible-header { 
+            background-color: #007bff; 
+            margin: 20px 0; 
+            padding: 12px; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            display: flex; 
+            justify-content: center; 
+        }
         .upload-icon { width: 24px; filter: invert(1); }
-        /* ফর্ম এবং সার্চ বক্স */
-        #inputFormContainer { display: none; padding: 15px; border: 1px solid #007bff; border-top: none; }
-        input { width: 100%; padding: 8px; margin: 5px 0; box-sizing: border-box; }
-        .btn-submit { background: #28a745; color: white; border: none; padding: 10px; width: 100%; cursor: pointer; }
+        
+        /* ফর্ম এবং সার্চ */
+        #inputFormContainer { display: none; padding: 20px; border: 1px solid #007bff; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
+    <h2>TAX Payment Database</h2>
+    
+    <input type="text" id="searchInput" placeholder="Search...">
     <button onclick="searchData()">Search</button>
-    <div id="resultArea"></div>
-
-    <br>
 
     <div class="collapsible-header" onclick="toggleForm()">
-        <img src="https://cdn-icons-png.flaticon.com/512/3024/3024500.png" class="upload-icon">
+        <img src="https://cdn-icons-png.flaticon.com/512/126/126467.png" class="upload-icon">
     </div>
 
     <div id="inputFormContainer">
         <form id="dataForm">
-            <input type="text" id="serial" placeholder="Serial No">
-            <input type="text" id="name" placeholder="Assessee Name">
+            <input type="text" id="sl" placeholder="Serial No">
+            <input type="text" id="name" placeholder="Name">
             <input type="text" id="tin" placeholder="TIN">
             <input type="text" id="mobile" placeholder="Mobile">
             <input type="text" id="zone" placeholder="Zone">
-            <button type="submit" class="btn-submit">Save Data</button>
+            <input type="text" id="circle" placeholder="Circle">
+            <input type="text" id="address" placeholder="Address">
+            <button type="submit" style="background: #28a745;">Save Data</button>
         </form>
     </div>
 </div>
 
 <script>
-    // টগল লজিক
     function toggleForm() {
         var f = document.getElementById("inputFormContainer");
         f.style.display = (f.style.display === "block") ? "none" : "block";
     }
 
-    // সার্চ লজিক
     function searchData() {
-        var input = document.getElementById("searchInput").value;
-        if(!input) { alert("Enter search text"); return; }
-        // এখানে আপনার ডাটা ফেচিং লজিক বসবে
-        alert("Searching for: " + input);
+        // আপনার সার্চ লজিক এখানে থাকবে
+        alert("Searching...");
     }
 </script>
 
