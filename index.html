@@ -1,71 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Tax Search</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .btn { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .result-card { background: #fff; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h3>Tax Information Search</h3>
-    <input type="password" id="apiToken" placeholder="Enter Airtable API Token">
-    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
-    <button class="btn" onclick="searchData()">Search</button>
-    <div id="results"></div>
+<div class="box">
+    <h3>Tax Search (Airtable)</h3>
+    <input type="password" id="tkn" placeholder="আপনার Airtable API Token এখানে দিন">
+    <input type="text" id="s" placeholder="নাম বা TIN লিখে সার্চ করুন...">
+    <button class="btn" onclick="search()">Search</button>
+    <div id="res"></div>
 </div>
 
 <script>
-    async function searchData() {
-        const token = document.getElementById('apiToken').value;
-        const query = document.getElementById('searchInput').value.toLowerCase();
-        const resultsDiv = document.getElementById('results');
+    async function search() {
+        const token = document.getElementById("tkn").value;
+        const query = document.getElementById("s").value.toLowerCase();
+        const resDiv = document.getElementById("res");
 
-        if (!token || !query) {
-            alert("Please enter both API Token and Search query!");
-            return;
-        }
+        if(!token || !query) { alert("সব তথ্য পূরণ করুন"); return; }
 
-        resultsDiv.innerHTML = "Searching...";
-
-        // আপনার এয়ারটেবল ইউআরএল (এয়ারটেবল থেকে পাওয়া তথ্য অনুযায়ী)
         const url = "https://api.airtable.com/v0/appiCd1uhxd82eZDX/Tax%20Records";
-
+        
         try {
-            const response = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
             const data = await response.json();
+            
+            const filtered = data.records.filter(r => 
+                (r.fields['Assesee Name']?.toLowerCase().includes(query)) || 
+                (r.fields['Tin']?.toString().includes(query))
+            );
 
-            const filtered = data.records.filter(r => {
-                const name = (r.fields['Assesee Name'] || "").toLowerCase();
-                const tin = (r.fields['Tin'] || "").toString();
-                return name.includes(query) || tin.includes(query);
-            });
-
-            if (filtered.length === 0) {
-                resultsDiv.innerHTML = "No record found.";
-            } else {
-                resultsDiv.innerHTML = filtered.map(r => `
-                    <div class="result-card">
-                        <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
-                        <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
-                        <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
-                        <b>Address:</b> ${r.fields['Address'] || 'N/A'}
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            resultsDiv.innerHTML = "Error loading data. Please check your token.";
-        }
+            resDiv.innerHTML = filtered.length ? filtered.map(r => `
+                <div style='margin-top:10px; border-left:4px solid green; padding:5px;'>
+                    <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
+                    <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
+                    <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
+                    <b>Address:</b> ${r.fields['Address'] || 'N/A'}
+                </div>`).join('') : "কোনো তথ্য পাওয়া যায়নি।";
+        } catch(e) { resDiv.innerHTML = "Error: টোকেন বা কানেকশনে সমস্যা আছে।"; }
     }
 </script>
-
 </body>
 </html>
