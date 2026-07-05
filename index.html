@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
         .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
@@ -18,15 +19,15 @@
 
 <div class="container">
     <div class="box">
-        <h3>TAX Search</h3>
-        <input type="text" id="s" placeholder="Search by Name OR TIN...">
-        <button class="btn" onclick="search()">Search</button>
+        <h3>TAX Information Search</h3>
+        <input type="text" id="s" placeholder="Enter Name or TIN...">
+        <button class="btn" onclick="search()">Search Records</button>
     </div>
     <div id="res"></div>
 </div>
 
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycby_7qaz7zrpPh4PSkPdJ0sG1Oj8NPD2w4mzbn_ZbNFMlqR2EWuwFK5gxyESPE3gUL3C5Q/exec";
+    const URL = "https://script.google.com/macros/s/AKfycbwpLfb0vP4Q_58yyPpw5u8IMpPGF_wBNwEZahD3Y3pTSbMxah16sxje2d2JXxVqa59mlA/exec";
     
     function search() {
         let q = document.getElementById("s").value.trim().toLowerCase();
@@ -34,33 +35,30 @@
         
         document.getElementById("res").innerHTML = "Searching...";
         
-        fetch(URL + "?q=" + encodeURIComponent(q)).then(res => res.json()).then(data => {
-            let filtered = data.filter(r => {
-                let nameInSheet = String(r[1]).toLowerCase(); // Name Column
-                let tinInSheet = String(r[2]).toLowerCase();  // TIN Column
-                return nameInSheet.includes(q) || tinInSheet.includes(q);
+        fetch(URL).then(res => res.json()).then(data => {
+            let headers = data[0]; // প্রথম সারি হেডার হিসেবে নিল
+            let rows = data.slice(1); // বাকি সব ডাটা সারি
+            
+            // ফিল্টার লজিক: কলাম ২ (Name) এবং কলাম ৩ (TIN) এ সার্চ হবে
+            let filtered = rows.filter(r => {
+                let name = String(r[1]).toLowerCase();
+                let tin = String(r[2]).toLowerCase();
+                return name.includes(q) || tin.includes(q);
             });
             
             if(filtered.length === 0) {
-                document.getElementById("res").innerHTML = "No record found.";
+                document.getElementById("res").innerHTML = "No matching record found.";
                 return;
             }
 
             let html = "";
             filtered.forEach(r => {
-                html += `<div class='res-card'>
-                    <div class='row'><span class='lbl'>Serial:</span><span class='val'>${r[0]}</span></div>
-                    <div class='row'><span class='lbl'>Name:</span><span class='val'>${r[1]}</span></div>
-                    <div class='row'><span class='lbl'>TIN:</span><span class='val'>${r[2]}</span></div>
-                    <div class='row'><span class='lbl'>Mobile:</span><span class='val'>${r[3]}</span></div>
-                    <div class='row'><span class='lbl'>Password:</span><span class='val'>${r[4]}</span></div>
-                    <div class='row'><span class='lbl'>Zone:</span><span class='val'>${r[5]}</span></div>
-                    <div class='row'><span class='lbl'>Circle:</span><span class='val'>${r[6]}</span></div>
-                    <div class='row'><span class='lbl'>Address:</span><span class='val'>${r[7]}</span></div>
-                    <div class='row'><span class='lbl'>Ref:</span><span class='val'>${r[8]}</span></div>
-                    <div class='row'><span class='lbl'>Lives:</span><span class='val'>${r[9]}</span></div>
-                    <div class='row'><span class='lbl'>Status:</span><span class='val'>${r[10]}</span></div>
-                </div>`;
+                html += "<div class='res-card'>";
+                // অটোমেটিক সব কলাম লুপের মাধ্যমে দেখাবে
+                r.forEach((val, i) => {
+                    html += `<div class='row'><span class='lbl'>${headers[i]}:</span><span class='val'>${val}</span></div>`;
+                });
+                html += "</div>";
             });
             document.getElementById("res").innerHTML = html;
         });
