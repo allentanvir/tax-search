@@ -2,39 +2,37 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <title>Tax Search</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         .btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .res-card { background: white; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .res-card { background: #fff; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; }
     </style>
 </head>
 <body>
+
 <div class="box">
-    <h3>Search Tax Info</h3>
-    <input type="text" id="s" placeholder="Enter Name or TIN...">
+    <h3>Tax Search</h3>
+    <input type="password" id="token" placeholder="Enter API Token">
+    <input type="text" id="s" placeholder="Enter Name or TIN">
     <button class="btn" onclick="search()">Search</button>
     <div id="res"></div>
 </div>
 
 <script>
-    // আপনার Airtable এর তথ্য
-    const BASE_ID = 'appiCd1uhxd82eZDX'; 
-    const TABLE_NAME = 'Tax Records'; 
-    const API_TOKEN = 'আপনার_PAT_টোকেনটি_এখানে_বসাবেন'; // এখানটা ঠিক করুন
-
-    const URL = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`;
-
     function search() {
-        let q = document.getElementById("s").value.trim().toLowerCase();
-        if(!q) return;
+        const BASE_ID = 'appiCd1uhxd82eZDX'; 
+        const TABLE_NAME = 'Tax Records'; 
+        const API_TOKEN = document.getElementById("token").value; // এখানে টোকেন টাইপ করতে হবে
+        
+        const q = document.getElementById("s").value.trim().toLowerCase();
+        const URL = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`;
 
-        document.getElementById("res").innerHTML = "Searching...";
+        if(!API_TOKEN || !q) { alert("Please enter Token and Search query"); return; }
 
-        fetch(URL, {
-            headers: { Authorization: `Bearer ${API_TOKEN}` }
-        })
+        fetch(URL, { headers: { Authorization: `Bearer ${API_TOKEN}` } })
         .then(res => res.json())
         .then(data => {
             let filtered = data.records.filter(r => 
@@ -45,15 +43,13 @@
             let html = filtered.length ? "" : "No result found.";
             filtered.forEach(r => {
                 html += `<div class='res-card'>
-                    <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
-                    <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
-                    <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
-                    <b>Address:</b> ${r.fields['Address'] || 'N/A'}
+                    <b>Name:</b> ${r.fields['Assesee Name']}<br>
+                    <b>TIN:</b> ${r.fields['Tin']}<br>
+                    <b>Mobile:</b> ${r.fields['Mobail No']}<br>
+                    <b>Address:</b> ${r.fields['Address']}
                 </div>`;
             });
             document.getElementById("res").innerHTML = html;
-        }).catch(err => {
-            document.getElementById("res").innerHTML = "Error: Please check your API Token.";
         });
     }
 </script>
