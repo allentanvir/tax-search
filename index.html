@@ -1,57 +1,71 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Tax Search</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        .res-card { background: #fff; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .result-card { background: #fff; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h3>Tax Search</h3>
-    <input type="password" id="token" placeholder="Enter API Token">
-    <input type="text" id="s" placeholder="Enter Name or TIN">
-    <button class="btn" onclick="search()">Search</button>
-    <div id="res"></div>
+<div class="container">
+    <h3>Tax Information Search</h3>
+    <input type="password" id="apiToken" placeholder="Enter Airtable API Token">
+    <input type="text" id="searchInput" placeholder="Search by Name or TIN...">
+    <button class="btn" onclick="searchData()">Search</button>
+    <div id="results"></div>
 </div>
 
 <script>
-    function search() {
-        const BASE_ID = 'appiCd1uhxd82eZDX'; 
-        const TABLE_NAME = 'Tax Records'; 
-        const API_TOKEN = document.getElementById("token").value; // এখানে টোকেন টাইপ করতে হবে
-        
-        const q = document.getElementById("s").value.trim().toLowerCase();
-        const URL = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`;
+    async function searchData() {
+        const token = document.getElementById('apiToken').value;
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const resultsDiv = document.getElementById('results');
 
-        if(!API_TOKEN || !q) { alert("Please enter Token and Search query"); return; }
+        if (!token || !query) {
+            alert("Please enter both API Token and Search query!");
+            return;
+        }
 
-        fetch(URL, { headers: { Authorization: `Bearer ${API_TOKEN}` } })
-        .then(res => res.json())
-        .then(data => {
-            let filtered = data.records.filter(r => 
-                String(r.fields['Assesee Name']).toLowerCase().includes(q) || 
-                String(r.fields['Tin']).includes(q)
-            );
-            
-            let html = filtered.length ? "" : "No result found.";
-            filtered.forEach(r => {
-                html += `<div class='res-card'>
-                    <b>Name:</b> ${r.fields['Assesee Name']}<br>
-                    <b>TIN:</b> ${r.fields['Tin']}<br>
-                    <b>Mobile:</b> ${r.fields['Mobail No']}<br>
-                    <b>Address:</b> ${r.fields['Address']}
-                </div>`;
+        resultsDiv.innerHTML = "Searching...";
+
+        // আপনার এয়ারটেবল ইউআরএল (এয়ারটেবল থেকে পাওয়া তথ্য অনুযায়ী)
+        const url = "https://api.airtable.com/v0/appiCd1uhxd82eZDX/Tax%20Records";
+
+        try {
+            const response = await fetch(url, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            document.getElementById("res").innerHTML = html;
-        });
+            const data = await response.json();
+
+            const filtered = data.records.filter(r => {
+                const name = (r.fields['Assesee Name'] || "").toLowerCase();
+                const tin = (r.fields['Tin'] || "").toString();
+                return name.includes(query) || tin.includes(query);
+            });
+
+            if (filtered.length === 0) {
+                resultsDiv.innerHTML = "No record found.";
+            } else {
+                resultsDiv.innerHTML = filtered.map(r => `
+                    <div class="result-card">
+                        <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
+                        <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
+                        <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
+                        <b>Address:</b> ${r.fields['Address'] || 'N/A'}
+                    </div>
+                `).join('');
+            }
+        } catch (error) {
+            resultsDiv.innerHTML = "Error loading data. Please check your token.";
+        }
     }
 </script>
+
 </body>
 </html>
