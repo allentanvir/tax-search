@@ -4,48 +4,40 @@
     <meta charset="UTF-8">
     <title>Tax Search</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        body { font-family: sans-serif; padding: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
-<div class="box">
-    <h3>Tax Search (Airtable)</h3>
-    <input type="password" id="tkn" placeholder="আপনার Airtable API Token এখানে দিন">
-    <input type="text" id="s" placeholder="নাম বা TIN লিখে সার্চ করুন...">
-    <button class="btn" onclick="search()">Search</button>
-    <div id="res"></div>
-</div>
+
+<input type="text" id="s" placeholder="নাম বা TIN লিখে সার্চ করুন...">
+<button onclick="search()">Search</button>
+<div id="res"></div>
 
 <script>
     async function search() {
-        const token = document.getElementById("tkn").value;
-        const query = document.getElementById("s").value.toLowerCase();
-        const resDiv = document.getElementById("res");
-
-        if(!token || !query) { alert("সব তথ্য পূরণ করুন"); return; }
-
-        const url = "https://api.airtable.com/v0/appiCd1uhxd82eZDX/Tax%20Records";
+        // আপনার Airtable এর API Key এখানে সরাসরি বসিয়ে দিন
+        const API_KEY = 'YOUR_API_TOKEN_HERE'; 
+        const BASE_ID = 'appiCd1uhxd82eZDX';
+        const TABLE = 'Tax%20Records';
         
-        try {
-            const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-            const data = await response.json();
-            
-            const filtered = data.records.filter(r => 
-                (r.fields['Assesee Name']?.toLowerCase().includes(query)) || 
-                (r.fields['Tin']?.toString().includes(query))
-            );
+        const q = document.getElementById("s").value.toLowerCase();
+        if(!q) return;
 
-            resDiv.innerHTML = filtered.length ? filtered.map(r => `
-                <div style='margin-top:10px; border-left:4px solid green; padding:5px;'>
-                    <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
-                    <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
-                    <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
-                    <b>Address:</b> ${r.fields['Address'] || 'N/A'}
-                </div>`).join('') : "কোনো তথ্য পাওয়া যায়নি।";
-        } catch(e) { resDiv.innerHTML = "Error: টোকেন বা কানেকশনে সমস্যা আছে।"; }
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}`;
+        
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+        const data = await res.json();
+        
+        const f = data.records.filter(r => 
+            r.fields['Assesee Name']?.toLowerCase().includes(q) || 
+            r.fields['Tin']?.toString().includes(q)
+        );
+
+        document.getElementById("res").innerHTML = f.length ? 
+            f.map(r => `<p>${r.fields['Assesee Name']} - ${r.fields['Tin']}</p>`).join('') : 
+            "কোনো তথ্য পাওয়া যায়নি।";
     }
 </script>
 </body>
