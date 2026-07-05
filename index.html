@@ -1,47 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: sans-serif; padding: 20px; }
-        input { padding: 10px; width: 300px; }
-        button { padding: 10px 20px; cursor: pointer; background: #007bff; color: white; border: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-    <h2>Tax Search</h2>
-    <input type="text" id="sQuery" placeholder="নাম বা TIN লিখে সার্চ করুন...">
-    <button onclick="runSearch()">Search</button>
-    <div id="results"></div>
+<script>
+    function runSearch() {
+        var q = document.getElementById('sQuery').value;
+        var resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = "Searching...";
 
-    <script>
-        function runSearch() {
-            var q = document.getElementById('sQuery').value;
-            var resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = "Searching...";
+        var scriptUrl = "https://script.google.com/macros/s/AKfycbweIiO-ASu0s0BXUvZgxBJDVqftEBI8Geh3OL2rCXuYJ43Q7bF5UEzL1-dZv4aQwElz/exec";
 
-            // আপনার Google Apps Script এর Web App URL টি এখানে বসান
-            var scriptUrl = "https://script.google.com/macros/s/AKfycbweIiO-ASu0s0BXUvZgxBJDVqftEBI8Geh3OL2rCXuYJ43Q7bF5UEzL1-dZv4aQwElz/exec";
+        // JSONP ব্যবহার করে ডেটা আনা
+        var url = scriptUrl + "?callback=handleResponse&q=" + encodeURIComponent(q);
+        var script = document.createElement('script');
+        script.src = url;
+        document.body.appendChild(script);
+    }
 
-            fetch(scriptUrl + "?q=" + encodeURIComponent(q))
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length <= 1) {
-                        resultsDiv.innerHTML = "কোনো তথ্য পাওয়া যায়নি।";
-                    } else {
-                        var html = '<table><tr>';
-                        data[0].forEach(h => html += '<th>' + h + '</th>');
-                        html += '</tr>';
-                        for(var i=1; i<data.length; i++) {
-                            html += '<tr>' + data[i].map(c => '<td>' + c + '</td>').join('') + '</tr>';
-                        }
-                        html += '</table>';
-                        resultsDiv.innerHTML = html;
-                    }
-                });
+    function handleResponse(data) {
+        var resultsDiv = document.getElementById('results');
+        if (!data || data.length === 0) {
+            resultsDiv.innerHTML = "কোনো তথ্য পাওয়া যায়নি।";
+            return;
         }
-    </script>
-</body>
-</html>
+        var html = '<table border="1"><tr>';
+        data[0].forEach(h => html += '<th>' + h + '</th>');
+        html += '</tr>';
+        for(var i=1; i<data.length; i++) {
+            html += '<tr>' + data[i].map(c => '<td>' + c + '</td>').join('') + '</tr>';
+        }
+        resultsDiv.innerHTML = html + '</table>';
+    }
+</script>
