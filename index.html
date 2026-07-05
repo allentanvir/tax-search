@@ -2,65 +2,58 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        .box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .res-card { background: white; padding: 15px; border-left: 6px solid #27ae60; margin-top: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .row { display: flex; padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
-        .lbl { font-weight: bold; width: 40%; color: #555; }
-        .val { width: 60%; color: #000; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .res-card { background: white; padding: 15px; margin-top: 15px; border-left: 5px solid #28a745; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="box">
-        <h3>TAX Information Search</h3>
-        <input type="text" id="s" placeholder="Enter Name or TIN...">
-        <button class="btn" onclick="search()">Search Records</button>
-    </div>
+<div class="box">
+    <h3>Search Tax Info</h3>
+    <input type="text" id="s" placeholder="Enter Name or TIN...">
+    <button class="btn" onclick="search()">Search</button>
     <div id="res"></div>
 </div>
 
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycbwpLfb0vP4Q_58yyPpw5u8IMpPGF_wBNwEZahD3Y3pTSbMxah16sxje2d2JXxVqa59mlA/exec";
-    
+    // আপনার Airtable এর তথ্য
+    const BASE_ID = 'appiCd1uhxd82eZDX'; 
+    const TABLE_NAME = 'Tax Records'; 
+    const API_TOKEN = 'আপনার_PAT_টোকেনটি_এখানে_বসাবেন'; // এখানটা ঠিক করুন
+
+    const URL = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE_NAME)}`;
+
     function search() {
         let q = document.getElementById("s").value.trim().toLowerCase();
         if(!q) return;
-        
-        document.getElementById("res").innerHTML = "Searching...";
-        
-        fetch(URL).then(res => res.json()).then(data => {
-            let headers = data[0]; // প্রথম সারি হেডার হিসেবে নিল
-            let rows = data.slice(1); // বাকি সব ডাটা সারি
-            
-            // ফিল্টার লজিক: কলাম ২ (Name) এবং কলাম ৩ (TIN) এ সার্চ হবে
-            let filtered = rows.filter(r => {
-                let name = String(r[1]).toLowerCase();
-                let tin = String(r[2]).toLowerCase();
-                return name.includes(q) || tin.includes(q);
-            });
-            
-            if(filtered.length === 0) {
-                document.getElementById("res").innerHTML = "No matching record found.";
-                return;
-            }
 
-            let html = "";
+        document.getElementById("res").innerHTML = "Searching...";
+
+        fetch(URL, {
+            headers: { Authorization: `Bearer ${API_TOKEN}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            let filtered = data.records.filter(r => 
+                String(r.fields['Assesee Name']).toLowerCase().includes(q) || 
+                String(r.fields['Tin']).includes(q)
+            );
+            
+            let html = filtered.length ? "" : "No result found.";
             filtered.forEach(r => {
-                html += "<div class='res-card'>";
-                // অটোমেটিক সব কলাম লুপের মাধ্যমে দেখাবে
-                r.forEach((val, i) => {
-                    html += `<div class='row'><span class='lbl'>${headers[i]}:</span><span class='val'>${val}</span></div>`;
-                });
-                html += "</div>";
+                html += `<div class='res-card'>
+                    <b>Name:</b> ${r.fields['Assesee Name'] || 'N/A'}<br>
+                    <b>TIN:</b> ${r.fields['Tin'] || 'N/A'}<br>
+                    <b>Mobile:</b> ${r.fields['Mobail No'] || 'N/A'}<br>
+                    <b>Address:</b> ${r.fields['Address'] || 'N/A'}
+                </div>`;
             });
             document.getElementById("res").innerHTML = html;
+        }).catch(err => {
+            document.getElementById("res").innerHTML = "Error: Please check your API Token.";
         });
     }
 </script>
